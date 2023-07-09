@@ -1,17 +1,17 @@
-package com.example.jejuairbnb.controller.UserControllerDto;
+package com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto;
 
 import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class UserControllerRequestDto {
+public class CreateUserRequestDto {
     private String username;
     private String password;
     private String email;
     private String rePassword;
 
     @Builder
-    public UserControllerRequestDto(
+    public CreateUserRequestDto(
             String username,
             String password,
             String email,
