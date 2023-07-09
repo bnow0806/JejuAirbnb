@@ -151,4 +151,34 @@ public class UserServiceTest {
         });
         Assertions.assertEquals(UserService.NOT_FOUND_USER, exception.getMessage());
     }
+
+    @Test
+    public void testUpdateUser() {
+// given
+        Long userId = 1L;
+        User user = User.builder()
+                .username("testtest")
+                .password("test")
+                .email("test@gmail.com")
+                .build();
+
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        // when
+        User findUser = userRepository.findByEmail(user.getEmail());
+
+        String updatedUsername = "testtesttest";
+        String updatedEmail = "update_test@gmail.com";
+
+        findUser.setUsername(updatedUsername);
+        findUser.setEmail(updatedEmail);
+
+        User savedUser = userRepository.save(findUser);
+
+        // then
+        Assertions.assertNotNull(findUser);
+        Assertions.assertEquals(userId, findUser.getId());
+        Assertions.assertEquals(updatedUsername, savedUser.getUsername());
+        Assertions.assertEquals(updatedEmail, savedUser.getEmail());
+    }
 }

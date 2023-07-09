@@ -3,6 +3,7 @@ package com.example.jejuairbnb.services;
 import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserRequestDto;
 import com.example.jejuairbnb.controller.UserControllerDto.FindUserDto.FindUserResponseDto;
+import com.example.jejuairbnb.controller.UserControllerDto.UpdateUserDto.UpdateUserRequestDto;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IUserRepository;
 import lombok.AllArgsConstructor;
@@ -73,6 +74,27 @@ public class UserService {
                     .userId(user.getId())
                     .email(user.getEmail())
                     .username(user.getUsername())
+                    .build();
+        } else {
+            throw new IllegalArgumentException(NOT_FOUND_USER);
+        }
+    }
+
+    @Transactional
+    public FindUserResponseDto updateUser(
+            UpdateUserRequestDto requestDto
+    ) {
+        User findUser = userRepository.findByEmail(requestDto.getEmail());
+
+        if (findUser != null) {
+            findUser.setUsername(requestDto.getUsername());
+            findUser.setEmail(requestDto.getEmail());
+
+            User savedUser = userRepository.save(findUser);
+            return FindUserResponseDto.builder()
+                    .userId(savedUser.getId())
+                    .email(savedUser.getEmail())
+                    .username(savedUser.getUsername())
                     .build();
         } else {
             throw new IllegalArgumentException(NOT_FOUND_USER);
