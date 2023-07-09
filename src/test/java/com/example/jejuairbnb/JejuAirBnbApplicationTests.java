@@ -9,5 +9,4 @@ class JejuAirBnbApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
