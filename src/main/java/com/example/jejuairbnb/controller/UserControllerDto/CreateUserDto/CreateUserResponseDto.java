@@ -1,4 +1,4 @@
-package com.example.jejuairbnb.controller.UserControllerDto;
+package com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto;
 
 import com.example.jejuairbnb.shared.CheckValidity;
 import lombok.Builder;
@@ -48,5 +48,4 @@ public class CreateUserResponseDto implements CheckValidity {
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
     }
-
 }
