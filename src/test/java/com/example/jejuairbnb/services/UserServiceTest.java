@@ -8,6 +8,7 @@ import com.example.jejuairbnb.repository.IUserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,6 +20,7 @@ import java.util.Base64;
 import java.util.Optional;
 
 import static com.example.jejuairbnb.services.UserService.DUPLICATE_EMAIL;
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
 public class UserServiceTest {
@@ -55,7 +57,7 @@ public class UserServiceTest {
                 .build();
 
         Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(null);
-        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
+        Mockito.when(userRepository.save(any(User.class))).thenReturn(user);
 
         CreateUserResponseDto responseDto = userService.registerUser(requestDto);
 
@@ -124,6 +126,7 @@ public class UserServiceTest {
                 .password("test")
                 .email("test@gmail.com")
                 .build();
+        user.setId(userId); //Added for test //AutoEncrementation
 
         Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(user));
 
@@ -161,8 +164,11 @@ public class UserServiceTest {
                 .password("test")
                 .email("test@gmail.com")
                 .build();
+        user.setId(userId); //Added for test //AutoEncrementation
 
-        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        //Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        Mockito.when(userRepository.findByEmail(user.getEmail())).thenReturn(user); //Added for Test
+        Mockito.when(userRepository.save(any(User.class))).then(AdditionalAnswers.returnsFirstArg());   //Added for test
 
         // when
         User findUser = userRepository.findByEmail(user.getEmail());
