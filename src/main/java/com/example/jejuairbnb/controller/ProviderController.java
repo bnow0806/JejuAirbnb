@@ -1,4 +1,7 @@
 package com.example.jejuairbnb.controller;
 
-//public class ProviderController {
-//}
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ProviderController {
+}
