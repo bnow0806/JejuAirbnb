@@ -84,7 +84,19 @@ public class UserService {
     public FindUserResponseDto updateUser(
             UpdateUserRequestDto requestDto
     ) {
-//       코드 리팩토링 해주세요 !
-//       requestDto.getEmail() 를 확용하여 유저를 찾고 update 해주세요 !
+        User findUser = userRepository.findByEmail(requestDto.getEmail());
+
+        if (findUser != null) {
+            findUser.setUsername(requestDto.getUsername());
+            findUser.setEmail(requestDto.getEmail());
+            userRepository.save(findUser);
+            return FindUserResponseDto.builder()
+                    .userId(findUser.getId())
+                    .email(findUser.getEmail())
+                    .username(findUser.getUsername())
+                    .build();
+        } else {
+            throw new IllegalArgumentException(NOT_FOUND_USER);
+        }
     }
 }
