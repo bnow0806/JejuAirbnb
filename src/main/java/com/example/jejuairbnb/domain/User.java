@@ -29,6 +29,7 @@ public class User extends TimeStamped {
 
     @Column(name = "kakao_auth_id")
     private String kakaoAuthId;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
