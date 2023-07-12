@@ -8,6 +8,7 @@ import com.example.jejuairbnb.repository.IUserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,6 +20,7 @@ import java.util.Base64;
 import java.util.Optional;
 
 import static com.example.jejuairbnb.services.UserService.DUPLICATE_EMAIL;
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
 public class UserServiceTest {
@@ -55,7 +57,7 @@ public class UserServiceTest {
                 .build();
 
         Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(null);
-        Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
+        Mockito.when(userRepository.save(any(User.class))).thenReturn(user);
 
         CreateUserResponseDto responseDto = userService.registerUser(requestDto);
 
@@ -66,7 +68,6 @@ public class UserServiceTest {
 
     @Test
     public void testExistEmail() throws NoSuchAlgorithmException {
-        // requestDto 으로 일단 기본 셋팅을 한다.
         CreateUserRequestDto requestDto = CreateUserRequestDto.builder()
                 .username("test")
                 .password("test")
@@ -86,12 +87,8 @@ public class UserServiceTest {
                 .build();
 
         Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(existingUser);
-        // 위에서 mock 객체를 생성했기 때문에, userRepository.findByEmail() 메소드를 호출하면
-        // existingUser 객체를 리턴하도록 설정 한다.
 
-        // then
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            // when
             userService.registerUser(requestDto);
         });
         Assertions.assertEquals(DUPLICATE_EMAIL, exception.getMessage());
@@ -99,7 +96,6 @@ public class UserServiceTest {
 
     @Test
     public void invalidPasswordAndRePassword() {
-        // given
         CreateUserRequestDto requestDto = CreateUserRequestDto.builder()
                 .username("test")
                 .password("test")
@@ -107,9 +103,7 @@ public class UserServiceTest {
                 .email("test@gmail.com")
                 .build();
 
-        // then
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            // when
             userService.registerUser(requestDto);
         });
         Assertions.assertEquals(UserService.INVALID_PASSWORD, exception.getMessage());
@@ -117,20 +111,18 @@ public class UserServiceTest {
 
     @Test
     public void findUserById() {
-        // given
         Long userId = 1L;
         User user = User.builder()
                 .username("testtest")
                 .password("test")
                 .email("test@gmail.com")
                 .build();
+        user.setId(userId); //Added for test //AutoEncrementation
 
         Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(user));
 
-        // when
         FindUserResponseDto findUser = userService.findUserById(1L);
 
-        // then
         Assertions.assertNotNull(findUser);
         Assertions.assertEquals(userId, findUser.getUserId());
         Assertions.assertEquals(user.getUsername(), findUser.getUsername());
@@ -139,14 +131,11 @@ public class UserServiceTest {
 
     @Test
     public void testFindUserByIdNotExists() {
-        // given
         Long userId = 1L;
 
         Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        // then
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            // when
             userService.findUserById(userId);
         });
         Assertions.assertEquals(UserService.NOT_FOUND_USER, exception.getMessage());
@@ -154,31 +143,6 @@ public class UserServiceTest {
 
     @Test
     public void testUpdateUser() {
-// given
-        Long userId = 1L;
-        User user = User.builder()
-                .username("testtest")
-                .password("test")
-                .email("test@gmail.com")
-                .build();
-
-        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        // when
-        User findUser = userRepository.findByEmail(user.getEmail());
-
-        String updatedUsername = "testtesttest";
-        String updatedEmail = "update_test@gmail.com";
-
-        findUser.setUsername(updatedUsername);
-        findUser.setEmail(updatedEmail);
-
-        User savedUser = userRepository.save(findUser);
-
-        // then
-        Assertions.assertNotNull(findUser);
-        Assertions.assertEquals(userId, findUser.getId());
-        Assertions.assertEquals(updatedUsername, savedUser.getUsername());
-        Assertions.assertEquals(updatedEmail, savedUser.getEmail());
+//     여기 테스트 코드 작성해주세요 !
     }
 }

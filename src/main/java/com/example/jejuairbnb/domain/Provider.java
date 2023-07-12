@@ -11,15 +11,15 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @NoArgsConstructor
-@Table(name = "users")
-public class User extends TimeStamped {
+@Table(name = "providers")
+public class Provider extends TimeStamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @Column(name = "username")
-    private String username;
+    @Column(name = "providername")
+    private String providername;
 
     @Column(name = "password")
     private String password;
@@ -29,18 +29,17 @@ public class User extends TimeStamped {
 
     @Column(name = "kakao_auth_id")
     private String kakaoAuthId;
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     @Builder
-    public User(
-            String username,
+    public Provider(
+            String providername,
             String password,
             String email,
             String kakaoAuthId
     ) {
-        this.username = username;
+        this.providername = providername;
         this.password = password;
         this.email = email;
         this.kakaoAuthId = kakaoAuthId;

@@ -65,7 +65,7 @@ public class UserService {
     public FindUserResponseDto findUserById(
            Long userId
     ) {
-        System.out.println(userId);
+//      리팩토링 진행해주세요
         Optional<User> findUser = userRepository.findById(userId);
 
         if (findUser.isPresent()) {
@@ -84,20 +84,7 @@ public class UserService {
     public FindUserResponseDto updateUser(
             UpdateUserRequestDto requestDto
     ) {
-        User findUser = userRepository.findByEmail(requestDto.getEmail());
-
-        if (findUser != null) {
-            findUser.setUsername(requestDto.getUsername());
-            findUser.setEmail(requestDto.getEmail());
-
-            User savedUser = userRepository.save(findUser);
-            return FindUserResponseDto.builder()
-                    .userId(savedUser.getId())
-                    .email(savedUser.getEmail())
-                    .username(savedUser.getUsername())
-                    .build();
-        } else {
-            throw new IllegalArgumentException(NOT_FOUND_USER);
-        }
+//       코드 리팩토링 해주세요 !
+//       requestDto.getEmail() 를 확용하여 유저를 찾고 update 해주세요 !
     }
 }
