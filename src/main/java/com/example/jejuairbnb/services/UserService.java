@@ -9,6 +9,7 @@ import com.example.jejuairbnb.repository.IUserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.webjars.NotFoundException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -96,7 +97,7 @@ public class UserService {
                     .username(findUser.getUsername())
                     .build();
         } else {
-            throw new IllegalArgumentException(NOT_FOUND_USER);
+            throw new NotFoundException(NOT_FOUND_USER);
         }
     }
 }
