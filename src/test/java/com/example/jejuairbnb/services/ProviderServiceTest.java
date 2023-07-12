@@ -36,7 +36,7 @@ public class ProviderServiceTest {
     }
 
     @Test
-    public void testRegisterProvider() throws NoSuchAlgorithmException {
+    public void testCreateProvider() throws NoSuchAlgorithmException {
         // given
         CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
                 .providername("test")
@@ -118,7 +118,7 @@ public class ProviderServiceTest {
     }
 
     @Test
-    public void findProviderById() {
+    public void testFindProviderById() {
         // given
         Long providerId = 1L;
         Provider provider = Provider.builder()
