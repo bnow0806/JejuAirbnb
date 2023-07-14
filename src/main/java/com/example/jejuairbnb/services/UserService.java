@@ -1,7 +1,7 @@
 package com.example.jejuairbnb.services;
 
-import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserRequestDto;
+import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.FindUserDto.FindUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.UpdateUserDto.UpdateUserRequestDto;
 import com.example.jejuairbnb.domain.User;
@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
+import java.util.Map;
 import java.util.Optional;
+
+import static com.example.jejuairbnb.services.SocialLoginService.DOES_NOT_FOUND_KAKAO_TOKEN;
 
 @Service
 @AllArgsConstructor
@@ -27,79 +27,80 @@ public class UserService {
     static final String NOT_FOUND_USER = "존재하지 않는 유저입니다.";
 
     private final IUserRepository userRepository;
+    private final SocialLoginService socialLoginService;
+
     @Transactional
     public CreateUserResponseDto registerUser(
             CreateUserRequestDto requestDto
-    ) throws NoSuchAlgorithmException {
+    ) {
         System.out.println("회원가입 요청: " + requestDto);
-        User foundUser = userRepository.findByEmail(requestDto.getEmail());
-
-        if (foundUser != null) {
-            throw new IllegalArgumentException(DUPLICATE_EMAIL);
+        String kakaoToken = requestDto.getKakaoToken();
+//      kakaoToken 을 이용해서 카카오 API 를 호출해서 유저 정보를 가져온다.
+        Map<String, Object> responseKakaoData = socialLoginService.kakaoCallback(kakaoToken);
+        if (responseKakaoData == null) {
+            throw new NotFoundException(DOES_NOT_FOUND_KAKAO_TOKEN);
         }
 
-        String password = requestDto.getPassword();
+        String kakaoAuthId = (String) responseKakaoData.get("id");
 
-        if (!password.equals(requestDto.getRePassword())) {
-            throw new IllegalArgumentException(INVALID_PASSWORD);
-        }
+        Optional<Map<String, Object>> kakaoAccountOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("kakao_account"));
+        String email = kakaoAccountOptional.map(kakaoAccount -> kakaoAccount.get("email").toString()).orElse(null);
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+        Optional<Map<String, Object>> propertiesOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("properties"));
+        String nickname = propertiesOptional.map(properties -> properties.get("nickname").toString()).orElse(null);
 
-        String hasingPassword = Base64.getEncoder().encodeToString(hash);
+        // id, email, nickname 출력
+        System.out.println("kakaoAuthId: " + kakaoAuthId);
+        System.out.println("email: " + email);
+        System.out.println("nickname: " + nickname);
 
-        User user = User.builder()
-                .username(requestDto.getUsername())
-                .password(hasingPassword)
-                .email(requestDto.getEmail())
-                .build();
+      User findUser = (User) userRepository.findByEmail(email)
+              .map(user -> {
+                  throw new IllegalArgumentException(DUPLICATE_EMAIL);
+              })
+              .orElseGet(() -> User.builder()
+                      .username(nickname)
+                      .email(email)
+                      .kakaoAuthId(kakaoAuthId)
+                      .build());
 
-        User savedUser = userRepository.save(user);
+      User savedUser = userRepository.save(findUser);
 
-        return CreateUserResponseDto.builder()
-                .username(savedUser.getUsername())
-                .email(savedUser.getEmail())
-                .build();
+      return CreateUserResponseDto.builder()
+              .username(savedUser.getUsername())
+              .email(savedUser.getEmail())
+              .build();
     }
 
     @Transactional
     public FindUserResponseDto findUserById(
            Long userId
     ) {
-//      리팩토링 진행해주세요
-        Optional<User> findUser = userRepository.findById(userId);
-
-        if (findUser.isPresent()) {
-            User user = findUser.get();
-            return FindUserResponseDto.builder()
-                    .userId(user.getId())
-                    .email(user.getEmail())
-                    .username(user.getUsername())
-                    .build();
-        } else {
-            throw new IllegalArgumentException(NOT_FOUND_USER);
-        }
+      return userRepository.findById(userId)
+              .map(user -> FindUserResponseDto.builder()
+                      .userId(user.getId())
+                      .email(user.getEmail())
+                      .username(user.getUsername())
+                      .build())
+              .orElseThrow(() -> new IllegalArgumentException(NOT_FOUND_USER));
     }
 
     @Transactional
     public FindUserResponseDto updateUser(
             UpdateUserRequestDto requestDto
     ) {
-        User findUser = userRepository.findByEmail(requestDto.getEmail());
-
-        if (findUser != null) {
-            findUser.setUsername(requestDto.getUsername());
-            findUser.setEmail(requestDto.getEmail());
-            userRepository.save(findUser);
-            return FindUserResponseDto.builder()
-                    .userId(findUser.getId())
-                    .email(findUser.getEmail())
-                    .username(findUser.getUsername())
-                    .build();
-        } else {
-            throw new NotFoundException(NOT_FOUND_USER);
-        }
+        return userRepository.findByEmail(requestDto.getEmail())
+                .map(user -> {
+                    user.setUsername(requestDto.getUsername());
+                    user.setEmail(requestDto.getEmail());
+                    userRepository.save(user);
+                    return FindUserResponseDto.builder()
+                            .userId(user.getId())
+                            .email(user.getEmail())
+                            .username(user.getUsername())
+                            .build();
+                })
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_USER));
     }
 //    @Transactional
 //    public FindUserResponseDto updateUser(

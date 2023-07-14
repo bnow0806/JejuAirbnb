@@ -2,10 +2,12 @@ package com.example.jejuairbnb.controller;
 
 import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserRequestDto;
 import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserResponseDto;
+import com.example.jejuairbnb.controller.UserControllerDto.LoginUserDto.LoginUserRequestDto;
 import com.example.jejuairbnb.services.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,8 +22,16 @@ public class UserController {
 
     @PostMapping("/register")
     public CreateUserResponseDto registerUser(
-            CreateUserRequestDto requestDto
+            @RequestBody CreateUserRequestDto requestDto
     ) throws NoSuchAlgorithmException {
         return userService.registerUser(requestDto);
+    }
+
+    @PostMapping("/login")
+    public void loginUser(
+            @RequestBody LoginUserRequestDto requestDto
+    ) {
+        System.out.println(requestDto);
+//        return userService.
     }
 }
