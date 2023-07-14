@@ -33,6 +33,7 @@ public class UserService {
     ) throws NoSuchAlgorithmException {
         System.out.println("회원가입 요청: " + requestDto);
         User foundUser = userRepository.findByEmail(requestDto.getEmail());
+
         if (foundUser != null) {
             throw new IllegalArgumentException(DUPLICATE_EMAIL);
         }
