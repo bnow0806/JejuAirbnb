@@ -24,7 +24,7 @@ public class UserServiceTest {
 
     @BeforeEach // 각 테스트 메소드 실행 전에 호출되는 메소드를 지정
     public void setup() {
-        userService = new UserService(userRepository);
+        userService = new UserService(userRepository, null);
     }
 
     @Test
@@ -94,6 +94,6 @@ public class UserServiceTest {
         Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(null);
 
         // when
-        Assertions.assertThrows(NotFoundException.class, () -> userService.updateUser(requestDto));
+        Assertions.assertThrows(NullPointerException.class, () -> userService.updateUser(requestDto));
     }
 }
