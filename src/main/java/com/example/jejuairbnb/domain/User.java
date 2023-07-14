@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Data
 @Entity
@@ -21,9 +22,6 @@ public class User extends TimeStamped {
     @Column(name = "username")
     private String username;
 
-    @Column(name = "password")
-    private String password;
-
     @Column(name = "email")
     private String email;
 
@@ -36,12 +34,10 @@ public class User extends TimeStamped {
     @Builder
     public User(
             String username,
-            String password,
             String email,
             String kakaoAuthId
     ) {
         this.username = username;
-        this.password = password;
         this.email = email;
         this.kakaoAuthId = kakaoAuthId;
     }
