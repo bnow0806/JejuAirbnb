@@ -18,6 +18,9 @@ public class Provider extends TimeStamped {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
+    @Column(name = "unregistedID")
+    private long unregistedID;
+
     @Column(name = "providername")
     private String providername;
 
@@ -43,5 +46,6 @@ public class Provider extends TimeStamped {
         this.password = password;
         this.email = email;
         this.kakaoAuthId = kakaoAuthId;
+        this.unregistedID = 0L;
     }
 }
