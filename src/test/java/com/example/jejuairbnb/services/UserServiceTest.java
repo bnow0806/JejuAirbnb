@@ -1,7 +1,7 @@
 package com.example.jejuairbnb.services;
 
-import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserRequestDto;
+import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.FindUserDto.FindUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.UpdateUserDto.UpdateUserRequestDto;
 import com.example.jejuairbnb.domain.User;
@@ -9,12 +9,9 @@ import com.example.jejuairbnb.repository.IUserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.AdditionalAnswers;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
 
 import java.nio.charset.StandardCharsets;
