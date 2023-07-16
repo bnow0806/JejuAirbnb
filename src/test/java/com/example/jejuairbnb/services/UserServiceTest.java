@@ -1,17 +1,18 @@
 package com.example.jejuairbnb.services;
 
-import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserRequestDto;
+import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.FindUserDto.FindUserResponseDto;
+import com.example.jejuairbnb.controller.UserControllerDto.UpdateUserDto.UpdateUserRequestDto;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IUserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.webjars.NotFoundException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -122,7 +123,7 @@ public class UserServiceTest {
         Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(user));
 
         FindUserResponseDto findUser = userService.findUserById(1L);
-
+        System.out.println(findUser);
         Assertions.assertNotNull(findUser);
         Assertions.assertEquals(userId, findUser.getUserId());
         Assertions.assertEquals(user.getUsername(), findUser.getUsername());
@@ -142,7 +143,44 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testUpdateUser() {
-//     여기 테스트 코드 작성해주세요 !
+    public void shouldUpdateUser() {
+        // given
+        UpdateUserRequestDto requestDto = UpdateUserRequestDto.builder()
+                .email("test@gmail.com")
+                .username("test_username")
+                .password("test_password")
+                .rePassword("test_password")
+                .build();
+
+        User user = new User();
+        user.setId(1L);
+        user.setEmail("test@email.com");
+        user.setUsername("test_username");
+
+        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(user);
+
+        // when
+        FindUserResponseDto responseDto = userService.updateUser(requestDto);
+
+        // then
+        Assertions.assertEquals(user.getId(), responseDto.getUserId());
+        Assertions.assertEquals(user.getEmail(), responseDto.getEmail());
+        Assertions.assertEquals(user.getUsername(), responseDto.getUsername());
+    }
+
+    @Test
+    public void shouldThrowUserNotFoundException() {
+        // given
+        UpdateUserRequestDto requestDto = UpdateUserRequestDto.builder()
+                .email("test@gmail.com")
+                .username("test_username")
+                .password("test_password")
+                .rePassword("test_password")
+                .build();
+
+        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(null);
+
+        // when
+        Assertions.assertThrows(NotFoundException.class, () -> userService.updateUser(requestDto));
     }
 }

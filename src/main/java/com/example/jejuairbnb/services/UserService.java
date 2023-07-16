@@ -9,6 +9,7 @@ import com.example.jejuairbnb.repository.IUserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.webjars.NotFoundException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -32,6 +33,7 @@ public class UserService {
     ) throws NoSuchAlgorithmException {
         System.out.println("회원가입 요청: " + requestDto);
         User foundUser = userRepository.findByEmail(requestDto.getEmail());
+
         if (foundUser != null) {
             throw new IllegalArgumentException(DUPLICATE_EMAIL);
         }
@@ -80,11 +82,25 @@ public class UserService {
         }
     }
 
-//    @Transactional
-//    public FindUserResponseDto updateUser(
-//            UpdateUserRequestDto requestDto
-//    ) {
-////       코드 리팩토링 해주세요 !
-////       requestDto.getEmail() 를 확용하여 유저를 찾고 update 해주세요 !
-//    }
+
+    @Transactional
+    public FindUserResponseDto updateUser(
+            UpdateUserRequestDto requestDto
+    ) {
+        User findUser = userRepository.findByEmail(requestDto.getEmail());
+
+        if (findUser != null) {
+            findUser.setUsername(requestDto.getUsername());
+            findUser.setEmail(requestDto.getEmail());
+            userRepository.save(findUser);
+            return FindUserResponseDto.builder()
+                    .userId(findUser.getId())
+                    .email(findUser.getEmail())
+                    .username(findUser.getUsername())
+                    .build();
+        } else {
+            throw new NotFoundException(NOT_FOUND_USER);
+        }
+    }
+
 }

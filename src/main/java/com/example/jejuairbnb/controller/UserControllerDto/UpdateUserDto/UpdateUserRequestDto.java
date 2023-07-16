@@ -13,10 +13,12 @@ public class UpdateUserRequestDto {
 
     @Builder
     public UpdateUserRequestDto(
+            String email,
             String username,
             String password,
             String rePassword
     ) {
+        this.email = email;
         this.username = username;
         this.password = password;
         this.rePassword = rePassword;
