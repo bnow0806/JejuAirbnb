@@ -1,13 +1,10 @@
 package com.example.jejuairbnb.services;
 
 import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto.CreateProviderRequestDto;
-import com.example.jejuairbnb.controller.ProviderControllerDto.FindProviderDto.FindProviderResponseDto;
-import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserRequestDto;
 import com.example.jejuairbnb.domain.Provider;
 import com.example.jejuairbnb.repository.IProviderRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -16,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -95,13 +93,12 @@ public class ProviderLoginTest {
         // TODO : 회원 탈퇴 과정에서 진행 -> Service로 만들기
         existingProvider.setUnregistedID(1L);
 
-        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(existingProvider);
+        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(existingProvider));
 
         // 2. 회원 탈퇴 이메일로 신규 가입 요청
         // register 과정 에서 findProvider 찾기   //sqve되면 안되므로 우선 찾기만 -> register에 추후 등록
         // when
-        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail());
-
+        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
         // 3. unregistedID 인지 확인
         // then
         Long unregistedID = findProvider.getUnregistedID();
