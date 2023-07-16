@@ -80,11 +80,11 @@ public class UserService {
         }
     }
 
-    @Transactional
-    public FindUserResponseDto updateUser(
-            UpdateUserRequestDto requestDto
-    ) {
-//       코드 리팩토링 해주세요 !
-//       requestDto.getEmail() 를 확용하여 유저를 찾고 update 해주세요 !
-    }
+//    @Transactional
+//    public FindUserResponseDto updateUser(
+//            UpdateUserRequestDto requestDto
+//    ) {
+////       코드 리팩토링 해주세요 !
+////       requestDto.getEmail() 를 확용하여 유저를 찾고 update 해주세요 !
+//    }
 }
