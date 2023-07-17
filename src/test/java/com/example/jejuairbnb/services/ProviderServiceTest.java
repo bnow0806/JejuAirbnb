@@ -57,7 +57,7 @@ public class ProviderServiceTest {
                 .email(requestDto.getEmail())
                 .build();
 
-        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(null);
+        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.empty());
         Mockito.when(providerRepository.save(any(Provider.class))).thenReturn(provider);
 
         CreateProviderResponseDto responseDto = providerService.registerProvider(requestDto);

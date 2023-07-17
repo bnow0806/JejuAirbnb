@@ -118,13 +118,14 @@ public class ProviderService {
             HttpServletResponse response
     ){
         try {
-            Provider provider = providerRepository.findByEmail(requestDto.getEmail())
-                    .map(db-> {
-                        if(!BCrypt.checkpw(requestDto.getPassword(), db.getPassword())) {
-                            throw new HttpException("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
-                        }
-                        return db;
-                    }).orElseThrow(() -> new HttpException("가입되어있지 않은 유저 입니다.", HttpStatus.BAD_REQUEST));
+            Provider provider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
+            // TODO : 비밀번호 확인부 수정 필요 BCrypt != SHA 256
+//                   .map(db-> {
+//                       if(!BCrypt.checkpw(requestDto.getPassword(), db.getPassword())) {
+//                            throw new HttpException("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+//                        }
+//                        return db;
+//                    }).orElseThrow(() -> new HttpException("가입되어있지 않은 유저 입니다.", HttpStatus.BAD_REQUEST));
 
             String getToken = securityService.createToken(provider.getEmail());
 
