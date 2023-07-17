@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -211,14 +212,9 @@ public class ProviderLoginTest {
 
         String hashingPassword = Base64.getEncoder().encodeToString(hash);
 
-        //password 처리
-        byte[] decoded = Base64.getDecoder().decode(hashingPassword);
-        String Password = new String(decoded);
-
         Provider existingProvider = Provider.builder()
                 .providername("test")
                 .password(hashingPassword)
-                //.password(Password)
                 .email(requestDto.getEmail())
                 .build();
 
