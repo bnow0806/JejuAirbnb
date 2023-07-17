@@ -5,6 +5,7 @@ import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto
 import com.example.jejuairbnb.controller.ProviderControllerDto.FindProviderDto.FindProviderResponseDto;
 import com.example.jejuairbnb.domain.Provider;
 import com.example.jejuairbnb.repository.IProviderRepository;
+import com.example.jejuairbnb.shared.SecurityService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,12 +28,12 @@ public class ProviderServiceTest {
 
     @MockBean // 스프링 부트 테스트에서 사용하는 목(mock) 객체를 생성하는 어노테이션입니다
     private IProviderRepository providerRepository;
-
+    private SecurityService securityService;
     private ProviderService providerService;
 
     @BeforeEach // 각 테스트 메소드 실행 전에 호출되는 메소드를 지정
     public void setup() {
-        providerService = new ProviderService(providerRepository);
+        providerService = new ProviderService(providerRepository,securityService);
     }
 
     @Test
@@ -56,7 +57,7 @@ public class ProviderServiceTest {
                 .email(requestDto.getEmail())
                 .build();
 
-        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(null);
+        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.empty());
         Mockito.when(providerRepository.save(any(Provider.class))).thenReturn(provider);
 
         CreateProviderResponseDto responseDto = providerService.registerProvider(requestDto);
@@ -87,7 +88,7 @@ public class ProviderServiceTest {
                 .email(requestDto.getEmail())
                 .build();
 
-        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(existingProvider);
+        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(existingProvider));
         // 위에서 mock 객체를 생성했기 때문에, userRepository.findByEmail() 메소드를 호출하면
         // existingUser 객체를 리턴하도록 설정 한다.
 
@@ -157,7 +158,7 @@ public class ProviderServiceTest {
 
     @Test
     public void testUpdateProvider() {
-// given
+        // given
         Long providerId = 1L;
         Provider provider = Provider.builder()
                 .providername("testtest")
@@ -167,11 +168,11 @@ public class ProviderServiceTest {
         provider.setId(providerId); //Added for test //AutoEncrementation
 
         //Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        Mockito.when(providerRepository.findByEmail(provider.getEmail())).thenReturn(provider); //Added for Test
+        Mockito.when(providerRepository.findByEmail(provider.getEmail())).thenReturn(Optional.of(provider)); //Added for Test
         Mockito.when(providerRepository.save(any(Provider.class))).then(AdditionalAnswers.returnsFirstArg());   //Added for test
 
         // when
-        Provider findProvider = providerRepository.findByEmail(provider.getEmail());
+        Provider findProvider = providerRepository.findByEmail(provider.getEmail()).orElse(null);
 
         String updatedProvidername = "testtesttest";
         String updatedEmail = "update_test@gmail.com";

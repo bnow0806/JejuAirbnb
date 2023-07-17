@@ -82,6 +82,7 @@ public class UserService {
         }
     }
 
+
     @Transactional
     public FindUserResponseDto updateUser(
             UpdateUserRequestDto requestDto
@@ -101,4 +102,5 @@ public class UserService {
             throw new NotFoundException(NOT_FOUND_USER);
         }
     }
+
 }

@@ -3,10 +3,18 @@ package com.example.jejuairbnb.services;
 import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto.CreateProviderRequestDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto.CreateProviderResponseDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.FindProviderDto.FindProviderResponseDto;
+import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderRequestDto;
+import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderResponseDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.UpdateProviderDto.UpdateProviderRequestDto;
 import com.example.jejuairbnb.domain.Provider;
 import com.example.jejuairbnb.repository.IProviderRepository;
+import com.example.jejuairbnb.shared.SecurityService;
+import com.example.jejuairbnb.shared.exception.HttpException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +34,7 @@ public class ProviderService {
     static final String NOT_FOUND_PROVIDER = "존재하지 않는 제공자입니다.";
 
     private final IProviderRepository providerRepository;
+    private final SecurityService securityService;
 
     @Transactional
     public CreateProviderResponseDto registerProvider(
@@ -33,7 +42,7 @@ public class ProviderService {
     ) throws NoSuchAlgorithmException {
 
         System.out.println("회원가입 요청: " + requestDto);
-        Provider foundProvider = providerRepository.findByEmail(requestDto.getEmail());
+        Provider foundProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
         if (foundProvider != null) {
             throw new IllegalArgumentException(DUPLICATE_EMAIL);
         }
@@ -86,7 +95,7 @@ public class ProviderService {
     public FindProviderResponseDto updateProvider(
             UpdateProviderRequestDto requestDto
     ) {
-        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail());
+        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
 
         if (findProvider != null) {
             findProvider.setProvidername(requestDto.getProvidername());
@@ -100,6 +109,45 @@ public class ProviderService {
                     .build();
         } else {
             throw new IllegalArgumentException(NOT_FOUND_PROVIDER);
+        }
+    }
+
+    @Transactional
+    public LoginProviderResponseDto loginProvider(
+            LoginProviderRequestDto requestDto,
+            HttpServletResponse response
+    ){
+        try {
+            //SHA-256 으로 PW 검증
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
+
+            String hashingPassword = Base64.getEncoder().encodeToString(hash);
+
+            Provider provider = providerRepository.findByEmail(requestDto.getEmail())
+                   .map(db-> {
+                       if(!hashingPassword.equals(db.getPassword())) {
+                            throw new HttpException("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+                        }
+                        return db;
+                    }).orElseThrow(() -> new HttpException("가입되어있지 않은 유저 입니다.", HttpStatus.BAD_REQUEST));
+
+            String getToken = securityService.createToken(provider.getEmail());
+
+            LoginProviderResponseDto responseDto = new LoginProviderResponseDto();
+            responseDto.setEmail(provider.getEmail());
+            responseDto.setToken(getToken);
+
+            Cookie cookie = new Cookie("access-token", String.valueOf(getToken));
+            cookie.setMaxAge(60 * 60 * 24);
+            cookie.setPath("/");
+            cookie.setHttpOnly(true);
+            response.addCookie(cookie);
+
+            return responseDto;
+
+        } catch (Exception e) {
+            throw new RuntimeException("bad request");
         }
     }
 }
