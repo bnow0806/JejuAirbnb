@@ -4,12 +4,16 @@ import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto
 import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderRequestDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderResponseDto;
 import com.example.jejuairbnb.domain.Provider;
+import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IProviderRepository;
+import com.example.jejuairbnb.repository.IUserRepository;
 import com.example.jejuairbnb.shared.SecurityService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.AdditionalAnswers;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -33,6 +37,9 @@ public class ProviderLoginTest {
     private IProviderRepository providerRepository;
     private SecurityService securityService;
     private ProviderService providerService;
+
+    @MockBean
+    private IUserRepository userRepository;
 
     @BeforeEach // 각 테스트 메소드 실행 전에 호출되는 메소드를 지정
     public void setup() {
@@ -59,7 +66,7 @@ public class ProviderLoginTest {
         Assertions.assertTrue(chekEmailFormResult);
     }
 
-    //EmailFormTest -> 어디에 구현할까?
+    //TODO : chekEmailForm -> 어디에 구현할까?
     private boolean chekEmailForm(CreateProviderRequestDto requestDto){
 
         String email = requestDto.getEmail();
@@ -118,6 +125,76 @@ public class ProviderLoginTest {
         Assertions.assertEquals(1L, unregisteredID);
     }
 
+    @Test
+    public void testResignProvider() throws NoSuchAlgorithmException{
+        //id, pw 입력하여 객체를 찾음
+        //unregisteredID 를 1로 만듬
+        // given
+        CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
+                .providername("test")
+                .password("test")
+                .rePassword("test")
+                .email("test@gmail.com")
+                .build();
+
+        Long providerId = 1L;
+        Provider provider = Provider.builder()
+                .providername("testtest")
+                .password("test")
+                .email("test@gmail.com")
+                .build();
+        provider.setId(providerId); //Added for test //AutoEncrementation
+
+        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(provider));
+        Mockito.when(providerRepository.save(any(Provider.class))).then(AdditionalAnswers.returnsFirstArg());
+
+        // when
+        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
+
+        Long updatedUnregisteredID = 1L;
+        findProvider.setUnregisteredID(updatedUnregisteredID);
+
+        Provider savedProvider = providerRepository.save(findProvider);
+
+        // then
+        Assertions.assertNotNull(findProvider);
+        Assertions.assertEquals(providerId, findProvider.getId());
+        Assertions.assertEquals(updatedUnregisteredID, savedProvider.getUnregisteredID());
+    }
+
+    @Test
+    public void testUserOrProvider() throws NoSuchAlgorithmException{
+        //findByEmail을 이용
+        //1. Provider DB Table에 값이 있는지 확인
+        //2. User DB Table에 값이 없는지 확인
+
+        //given
+        CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
+                .providername("test")
+                .password("test")
+                .rePassword("test")
+                .email("test@gmail.com")
+                .build();
+
+        Long providerId = 1L;
+        Provider provider = Provider.builder()
+                .providername("testtest")
+                .password("test")
+                .email("test@gmail.com")
+                .build();
+        provider.setId(providerId); //Added for test //AutoEncrementation
+
+        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(provider));
+        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(null);
+
+        // when
+        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
+        User findUser = userRepository.findByEmail(requestDto.getEmail());
+
+        //then
+        Assertions.assertNotNull(findProvider);
+        Assertions.assertNull(findUser);
+    }
 
     @Test
     public void testLogin() throws NoSuchAlgorithmException{
@@ -134,13 +211,14 @@ public class ProviderLoginTest {
 
         String hashingPassword = Base64.getEncoder().encodeToString(hash);
 
+        //password 처리
         byte[] decoded = Base64.getDecoder().decode(hashingPassword);
         String Password = new String(decoded);
 
         Provider existingProvider = Provider.builder()
                 .providername("test")
-                //.password(hashingPassword)
-                .password(Password)
+                .password(hashingPassword)
+                //.password(Password)
                 .email(requestDto.getEmail())
                 .build();
 
@@ -157,9 +235,5 @@ public class ProviderLoginTest {
         Assertions.assertNotNull(loginProviderResponseDto);
         Assertions.assertEquals(requestDto.getEmail(), loginProviderResponseDto.getEmail());
         Assertions.assertNotNull(loginProviderResponseDto.getToken());
-    }
-
-    @Test
-    public void testJwtTokenProvider() throws NoSuchAlgorithmException{
     }
 }
