@@ -8,7 +8,7 @@ import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.
 import com.example.jejuairbnb.controller.ProviderControllerDto.UpdateProviderDto.UpdateProviderRequestDto;
 import com.example.jejuairbnb.domain.Provider;
 import com.example.jejuairbnb.repository.IProviderRepository;
-import com.example.jejuairbnb.shared.SecurityService;
+import com.example.jejuairbnb.shared.services.SecurityService;
 import com.example.jejuairbnb.shared.exception.HttpException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -42,10 +42,11 @@ public class ProviderService {
     ) throws NoSuchAlgorithmException {
 
         System.out.println("회원가입 요청: " + requestDto);
-        Provider foundProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
-        if (foundProvider != null) {
-            throw new IllegalArgumentException(DUPLICATE_EMAIL);
-        }
+        providerRepository
+                .findByEmail(requestDto.getEmail())
+                .orElseThrow(
+                        () -> new IllegalArgumentException(DUPLICATE_EMAIL)
+                );
 
         String password = requestDto.getPassword();
 
@@ -76,40 +77,36 @@ public class ProviderService {
     public FindProviderResponseDto findProviderById(
             Long providerId
     ) {
-        System.out.println(providerId);
-        Optional<Provider> findProvider = providerRepository.findById(providerId);
-
-        if (findProvider.isPresent()) {
-            Provider provider = findProvider.get();
-            return FindProviderResponseDto.builder()
-                    .providerId(provider.getId())
-                    .email(provider.getEmail())
-                    .providername(provider.getProvidername())
-                    .build();
-        } else {
-            throw new IllegalArgumentException(NOT_FOUND_PROVIDER);
-        }
+        Provider findProvider = providerRepository.findById(providerId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException(NOT_FOUND_PROVIDER)
+                );
+        return FindProviderResponseDto.builder()
+                .providerId(findProvider.getId())
+                .email(findProvider.getEmail())
+                .providername(findProvider.getProvidername())
+                .build();
     }
 
     @Transactional
     public FindProviderResponseDto updateProvider(
             UpdateProviderRequestDto requestDto
     ) {
-        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
+        Provider findProvider = providerRepository
+                .findByEmail(requestDto.getEmail())
+                .orElseThrow(
+                        () -> new IllegalArgumentException(NOT_FOUND_PROVIDER)
+                );
 
-        if (findProvider != null) {
-            findProvider.setProvidername(requestDto.getProvidername());
-            findProvider.setEmail(requestDto.getEmail());
+        findProvider.setProvidername(requestDto.getProvidername());
+        findProvider.setEmail(requestDto.getEmail());
 
-            Provider savedProvider = providerRepository.save(findProvider);
-            return FindProviderResponseDto.builder()
-                    .providerId(savedProvider.getId())
-                    .email(savedProvider.getEmail())
-                    .providername(savedProvider.getProvidername())
-                    .build();
-        } else {
-            throw new IllegalArgumentException(NOT_FOUND_PROVIDER);
-        }
+        Provider savedProvider = providerRepository.save(findProvider);
+        return FindProviderResponseDto.builder()
+                .providerId(savedProvider.getId())
+                .email(savedProvider.getEmail())
+                .providername(savedProvider.getProvidername())
+                .build();
     }
 
     @Transactional
