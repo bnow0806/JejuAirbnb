@@ -21,8 +21,6 @@ import static com.example.jejuairbnb.services.SocialLoginService.DOES_NOT_FOUND_
 public class UserService {
 
     static final String DUPLICATE_EMAIL = "중복된 이메일이 존재합니다.";
-    static final String INVALID_PASSWORD = "비밀번호가 일치하지 않습니다.";
-
     static final String NOT_FOUND_USER = "존재하지 않는 유저입니다.";
 
     private final IUserRepository userRepository;
@@ -40,7 +38,7 @@ public class UserService {
             throw new NotFoundException(DOES_NOT_FOUND_KAKAO_TOKEN);
         }
 
-        String kakaoAuthId = (String) responseKakaoData.get("id");
+        String kakaoAuthId = responseKakaoData.get("id").toString();
 
         Optional<Map<String, Object>> kakaoAccountOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("kakao_account"));
         String email = kakaoAccountOptional.map(kakaoAccount -> kakaoAccount.get("email").toString()).orElse(null);
@@ -48,27 +46,22 @@ public class UserService {
         Optional<Map<String, Object>> propertiesOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("properties"));
         String nickname = propertiesOptional.map(properties -> properties.get("nickname").toString()).orElse(null);
 
-        // id, email, nickname 출력
-        System.out.println("kakaoAuthId: " + kakaoAuthId);
-        System.out.println("email: " + email);
-        System.out.println("nickname: " + nickname);
+        User findUser = (User) userRepository.findByEmail(email)
+                .map(user -> {
+                    throw new IllegalArgumentException(DUPLICATE_EMAIL);
+                })
+                .orElseGet(() -> User.builder()
+                        .username(nickname)
+                        .email(email)
+                        .kakaoAuthId(kakaoAuthId)
+                        .build());
 
-      User findUser = (User) userRepository.findByEmail(email)
-              .map(user -> {
-                  throw new IllegalArgumentException(DUPLICATE_EMAIL);
-              })
-              .orElseGet(() -> User.builder()
-                      .username(nickname)
-                      .email(email)
-                      .kakaoAuthId(kakaoAuthId)
-                      .build());
+        User savedUser = userRepository.save(findUser);
 
-      User savedUser = userRepository.save(findUser);
-
-      return CreateUserResponseDto.builder()
-              .username(savedUser.getUsername())
-              .email(savedUser.getEmail())
-              .build();
+        return CreateUserResponseDto.builder()
+                .username(savedUser.getUsername())
+                .email(savedUser.getEmail())
+                .build();
     }
 
     @Transactional
@@ -101,11 +94,4 @@ public class UserService {
                 })
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_USER));
     }
-//    @Transactional
-//    public FindUserResponseDto updateUser(
-//            UpdateUserRequestDto requestDto
-//    ) {
-////       코드 리팩토링 해주세요 !
-////       requestDto.getEmail() 를 확용하여 유저를 찾고 update 해주세요 !
-//    }
 }
