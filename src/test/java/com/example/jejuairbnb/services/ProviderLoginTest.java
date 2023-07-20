@@ -7,17 +7,15 @@ import com.example.jejuairbnb.domain.Provider;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IProviderRepository;
 import com.example.jejuairbnb.repository.IUserRepository;
-import com.example.jejuairbnb.shared.SecurityService;
+import com.example.jejuairbnb.shared.services.SecurityService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -27,7 +25,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.example.jejuairbnb.services.UserService.DUPLICATE_EMAIL;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
@@ -67,7 +64,6 @@ public class ProviderLoginTest {
         Assertions.assertTrue(chekEmailFormResult);
     }
 
-    //TODO : chekEmailForm -> 어디에 구현할까?
     private boolean chekEmailForm(CreateProviderRequestDto requestDto){
 
         String email = requestDto.getEmail();
@@ -88,6 +84,7 @@ public class ProviderLoginTest {
         // 1. 회원 탈퇴한 객체 생성
         // 2. 회원 탈퇴 이메일로 신규 가입 요청
         // 3. unregisteredID 인지 확인 -> true 라면 exception 발생 시킬 것
+        // 3. unregistedID 인지 확인 -> true 라면 exception 발생 시킬 것
 
         // given
         // 1. 회원 탈퇴한 객체 생성
@@ -190,7 +187,7 @@ public class ProviderLoginTest {
 
         // when
         Provider findProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
-        User findUser = userRepository.findByEmail(requestDto.getEmail());
+        Optional<User> findUser = userRepository.findByEmail(requestDto.getEmail());
 
         //then
         Assertions.assertNotNull(findProvider);
@@ -231,5 +228,15 @@ public class ProviderLoginTest {
         Assertions.assertNotNull(loginProviderResponseDto);
         Assertions.assertEquals(requestDto.getEmail(), loginProviderResponseDto.getEmail());
         Assertions.assertNotNull(loginProviderResponseDto.getToken());
+        // 3. unregistedID 인지 확인
+        // then
+        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
+        Long unregistedID = findProvider.getUnregisteredID();
+        Assertions.assertEquals(1L, unregistedID);
+    }
+
+
+    @Test
+    public void testJwtTokenProvider() throws NoSuchAlgorithmException{
     }
 }

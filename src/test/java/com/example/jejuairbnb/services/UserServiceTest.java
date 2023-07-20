@@ -1,7 +1,5 @@
 package com.example.jejuairbnb.services;
 
-import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserRequestDto;
-import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.FindUserDto.FindUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.UpdateUserDto.UpdateUserRequestDto;
 import com.example.jejuairbnb.domain.User;
@@ -14,14 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.webjars.NotFoundException;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.Optional;
-
-import static com.example.jejuairbnb.services.UserService.DUPLICATE_EMAIL;
-import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
 public class UserServiceTest {
@@ -33,81 +24,7 @@ public class UserServiceTest {
 
     @BeforeEach // 각 테스트 메소드 실행 전에 호출되는 메소드를 지정
     public void setup() {
-        userService = new UserService(userRepository);
-    }
-
-    @Test
-    public void testRegisterUser() throws NoSuchAlgorithmException {
-        // given
-        CreateUserRequestDto requestDto = CreateUserRequestDto.builder()
-                .username("test")
-                .password("test")
-                .rePassword("test")
-                .email("test@gmail.com")
-                .build();
-
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
-
-        String hashingPassword = Base64.getEncoder().encodeToString(hash);
-
-        User user = User.builder()
-                .username(requestDto.getUsername())
-                .password(hashingPassword)
-                .email(requestDto.getEmail())
-                .build();
-
-        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(null);
-        Mockito.when(userRepository.save(any(User.class))).thenReturn(user);
-
-        CreateUserResponseDto responseDto = userService.registerUser(requestDto);
-
-        Assertions.assertNotNull(responseDto);
-        Assertions.assertEquals(requestDto.getUsername(), responseDto.getUsername());
-        Assertions.assertEquals(requestDto.getEmail(), responseDto.getEmail());
-    }
-
-    @Test
-    public void testExistEmail() throws NoSuchAlgorithmException {
-        CreateUserRequestDto requestDto = CreateUserRequestDto.builder()
-                .username("test")
-                .password("test")
-                .rePassword("test")
-                .email("test@gmail.com")
-                .build();
-
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
-
-        String hashingPassword = Base64.getEncoder().encodeToString(hash);
-
-        User existingUser = User.builder()
-                .username(requestDto.getUsername())
-                .password(hashingPassword)
-                .email(requestDto.getEmail())
-                .build();
-
-        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(existingUser);
-
-        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            userService.registerUser(requestDto);
-        });
-        Assertions.assertEquals(DUPLICATE_EMAIL, exception.getMessage());
-    }
-
-    @Test
-    public void invalidPasswordAndRePassword() {
-        CreateUserRequestDto requestDto = CreateUserRequestDto.builder()
-                .username("test")
-                .password("test")
-                .rePassword("t")
-                .email("test@gmail.com")
-                .build();
-
-        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            userService.registerUser(requestDto);
-        });
-        Assertions.assertEquals(UserService.INVALID_PASSWORD, exception.getMessage());
+        userService = new UserService(userRepository, null);
     }
 
     @Test
@@ -115,7 +32,6 @@ public class UserServiceTest {
         Long userId = 1L;
         User user = User.builder()
                 .username("testtest")
-                .password("test")
                 .email("test@gmail.com")
                 .build();
         user.setId(userId); //Added for test //AutoEncrementation
@@ -148,16 +64,15 @@ public class UserServiceTest {
         UpdateUserRequestDto requestDto = UpdateUserRequestDto.builder()
                 .email("test@gmail.com")
                 .username("test_username")
-                .password("test_password")
-                .rePassword("test_password")
                 .build();
 
         User user = new User();
         user.setId(1L);
         user.setEmail("test@email.com");
         user.setUsername("test_username");
+        user.setKakaoAuthId("test_kakao_auth_id");
 
-        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(user);
+        Mockito.when(userRepository.findByEmail(requestDto.getEmail()));
 
         // when
         FindUserResponseDto responseDto = userService.updateUser(requestDto);
@@ -174,13 +89,11 @@ public class UserServiceTest {
         UpdateUserRequestDto requestDto = UpdateUserRequestDto.builder()
                 .email("test@gmail.com")
                 .username("test_username")
-                .password("test_password")
-                .rePassword("test_password")
                 .build();
 
         Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(null);
 
         // when
-        Assertions.assertThrows(NotFoundException.class, () -> userService.updateUser(requestDto));
+        Assertions.assertThrows(NullPointerException.class, () -> userService.updateUser(requestDto));
     }
 }

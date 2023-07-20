@@ -1,14 +1,16 @@
-package com.example.jejuairbnb.shared;
+package com.example.jejuairbnb.shared.services;
 
 import com.example.jejuairbnb.domain.Provider;
 import com.example.jejuairbnb.repository.IProviderRepository;
+import com.example.jejuairbnb.shared.exception.HttpException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.Cookie;
 import jakarta.xml.bind.DatatypeConverter;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -19,7 +21,8 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class SecurityService {
 
-    private static final String SECRET_KEY ="dlfkajsdflkajsf;laskdjf;lasdkjfads;lkfjasd;lkfjasdfklasjdflaskjdhflsjadhf";
+    @Value("${jwt.secret.key}")
+    private String SECRET_KEY;
     private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24;
 
     private final IProviderRepository providerRepository;
@@ -48,7 +51,12 @@ public class SecurityService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return providerRepository.findByEmail(claims.getSubject()).orElseThrow();
+
+        return providerRepository
+                .findByEmail(claims.getSubject())
+                .orElseThrow(
+                        () -> new HttpException("존재하지 않는 제공자입니다.", HttpStatus.NOT_FOUND)
+                );
     }
 
     public String getTokenByCookie(Cookie[] cookies) {

@@ -5,7 +5,10 @@ import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto
 import com.example.jejuairbnb.controller.ProviderControllerDto.FindProviderDto.FindProviderResponseDto;
 import com.example.jejuairbnb.domain.Provider;
 import com.example.jejuairbnb.repository.IProviderRepository;
-import com.example.jejuairbnb.shared.SecurityService;
+<<<<<<< HEAD
+=======
+import com.example.jejuairbnb.shared.services.SecurityService;
+>>>>>>> bec643be41f28cfa9bf27b2df79dcbfc232a7ae8
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +40,9 @@ public class ProviderServiceTest {
     }
 
     @Test
-    public void testCreateProvider() throws NoSuchAlgorithmException {
+    public void testCreateProvider()
+            throws NoSuchAlgorithmException
+    {
         // given
         CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
                 .providername("test")

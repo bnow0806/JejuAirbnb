@@ -5,21 +5,12 @@ import lombok.Data;
 
 @Data
 public class CreateUserRequestDto {
-    private String username;
-    private String password;
-    private String email;
-    private String rePassword;
+    private String kakaoToken;
 
     @Builder
     public CreateUserRequestDto(
-            String username,
-            String password,
-            String email,
-            String rePassword
+            String kakaoToken
     ) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.rePassword = rePassword;
+        this.kakaoToken = kakaoToken;
     }
 }

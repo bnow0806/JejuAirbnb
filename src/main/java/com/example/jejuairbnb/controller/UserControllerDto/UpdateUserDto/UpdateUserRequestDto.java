@@ -8,19 +8,13 @@ public class UpdateUserRequestDto {
 
     private String username;
     private String email;
-    private String password;
-    private String rePassword;
 
     @Builder
     public UpdateUserRequestDto(
             String email,
-            String username,
-            String password,
-            String rePassword
+            String username
     ) {
         this.email = email;
         this.username = username;
-        this.password = password;
-        this.rePassword = rePassword;
     }
 }
