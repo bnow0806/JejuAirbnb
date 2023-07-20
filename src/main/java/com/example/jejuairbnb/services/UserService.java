@@ -77,6 +77,7 @@ public class UserService {
               .orElseThrow(() -> new IllegalArgumentException(NOT_FOUND_USER));
     }
 
+
     @Transactional
     public FindUserResponseDto updateUser(
             UpdateUserRequestDto requestDto
@@ -94,4 +95,5 @@ public class UserService {
                 })
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_USER));
     }
+
 }

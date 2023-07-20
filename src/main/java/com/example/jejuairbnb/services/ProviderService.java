@@ -8,13 +8,12 @@ import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.
 import com.example.jejuairbnb.controller.ProviderControllerDto.UpdateProviderDto.UpdateProviderRequestDto;
 import com.example.jejuairbnb.domain.Provider;
 import com.example.jejuairbnb.repository.IProviderRepository;
-import com.example.jejuairbnb.shared.services.SecurityService;
 import com.example.jejuairbnb.shared.exception.HttpException;
+import com.example.jejuairbnb.shared.services.SecurityService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -115,9 +113,15 @@ public class ProviderService {
             HttpServletResponse response
     ){
         try {
+            //SHA-256 으로 PW 검증
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
+
+            String hashingPassword = Base64.getEncoder().encodeToString(hash);
+
             Provider provider = providerRepository.findByEmail(requestDto.getEmail())
-                    .map(db-> {
-                        if(!BCrypt.checkpw(requestDto.getPassword(), db.getPassword())) {
+                   .map(db-> {
+                       if(!hashingPassword.equals(db.getPassword())) {
                             throw new HttpException("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
                         }
                         return db;
