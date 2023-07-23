@@ -53,7 +53,11 @@ public class SecurityService {
 
         return userRepository.findByEmail(claims.getSubject())
                 .orElseThrow(
-                        () -> new HttpException("존재하지 않은 사용자입니다.", HttpStatus.NOT_FOUND)
+                        () -> new HttpException(
+                                false,
+                                "존재하지 않은 사용자입니다.",
+                                HttpStatus.NOT_FOUND
+                        )
                 );
     }
 

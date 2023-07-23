@@ -24,7 +24,11 @@ public class AdminProductService {
             CreateProductRequestDto requestDto
     ) {
         if (user.getProvider() == ProviderEnum.FALSE){
-            throw new HttpException("PROVIDER 가 아닙니다.", HttpStatus.NOT_FOUND);
+            throw new HttpException(
+                    false,
+                    "PROVIDER 가 아닙니다.",
+                    HttpStatus.NOT_FOUND
+            );
         }
 
         Product createProductRequestDto = Product
@@ -49,11 +53,19 @@ public class AdminProductService {
         UpdateProductRequestDto updateProductRequestDto
     ) {
         Product findProduct = productRepository.findById(id).orElseThrow(
-                () -> new HttpException("해당 상품이 없습니다.", HttpStatus.NOT_FOUND)
+                () -> new HttpException(
+                        false,
+                        "해당 상품이 없습니다.",
+                        HttpStatus.NOT_FOUND
+                )
         );
 
         if (user.getProvider() == ProviderEnum.FALSE){
-            throw new HttpException("PROVIDER 가 아닙니다.", HttpStatus.NOT_FOUND);
+            throw new HttpException(
+                    false,
+                    "PROVIDER 가 아닙니다.",
+                    HttpStatus.NOT_FOUND
+            );
         }
 
         findProduct.setName(updateProductRequestDto.getName());
@@ -73,13 +85,31 @@ public class AdminProductService {
             Long id,
             User user
     ) {
-        Product findProduct = productRepository.findById(id).orElseThrow(
-                () -> new HttpException("해당 상품이 없습니다.", HttpStatus.NOT_FOUND)
-        );
+        Product findProduct = productRepository.findById(id)
+                .orElseThrow(
+                        () -> new HttpException(
+                                false,
+                                "해당 상품이 없습니다.",
+                                HttpStatus.NOT_FOUND
+                        )
+                );
 
-        if (user.getProvider() == ProviderEnum.FALSE){
-            throw new HttpException("PROVIDER 가 아닙니다.", HttpStatus.NOT_FOUND);
+        if (user.getProvider() == ProviderEnum.FALSE) {
+            throw new HttpException(
+                    false,
+                    "PROVIDER 가 아닙니다.",
+                    HttpStatus.NOT_FOUND
+            );
         }
+
+        if (findProduct.getUserId() != user.getId()) {
+            throw new HttpException(
+                    false,
+                    "해당 상품의 주인이 아닙니다.",
+                    HttpStatus.NOT_FOUND
+            );
+        }
+
         productRepository.delete(findProduct);
         return new CoreSuccessResponse(
                 true,

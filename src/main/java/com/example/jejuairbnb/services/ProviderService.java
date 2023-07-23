@@ -117,7 +117,11 @@ public class ProviderService {
             byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
 
             User findUser = userRepository.findByEmail(requestDto.getEmail())
-                    .orElseThrow(() -> new HttpException("가입되어있지 않은 유저 입니다.", HttpStatus.BAD_REQUEST));
+                    .orElseThrow(() -> new HttpException(
+                            false,
+                            "가입되어있지 않은 유저 입니다.",
+                            HttpStatus.BAD_REQUEST
+                    ));
 
             String getToken = securityService.createToken(findUser.getEmail());
 
