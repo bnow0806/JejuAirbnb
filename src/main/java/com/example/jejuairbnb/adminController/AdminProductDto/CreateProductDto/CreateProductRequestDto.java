@@ -7,5 +7,5 @@ public class CreateProductRequestDto {
     private String name;
     private Long price;
     private String img;
-    private int providerId;
+    private int userId;
 }

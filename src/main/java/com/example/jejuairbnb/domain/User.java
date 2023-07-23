@@ -37,4 +37,5 @@ public class User extends TimeStamped {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 }

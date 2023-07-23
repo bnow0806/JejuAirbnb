@@ -169,19 +169,19 @@ public class ProviderServiceTest {
         Mockito.when(userRepository.save(any(User.class))).then(AdditionalAnswers.returnsFirstArg());   //Added for test
 
         // when
-        User findProvider = userRepository.findByEmail(users.getEmail()).orElse(null);
+        User findUser = userRepository.findByEmail(users.getEmail()).orElse(null);
 
         String updatedProvidername = "testtesttest";
         String updatedEmail = "update_test@gmail.com";
 
-        findProvider.setUsername(updatedProvidername);
-        findProvider.setEmail(updatedEmail);
+        findUser.setUsername(updatedProvidername);
+        findUser.setEmail(updatedEmail);
 
-        User savedProvider = userRepository.save(findProvider);
+        User savedProvider = userRepository.save(findUser);
 
         // then
-        Assertions.assertNotNull(findProvider);
-        Assertions.assertEquals(providerId, findProvider.getId());
+        Assertions.assertNotNull(findUser);
+        Assertions.assertEquals(providerId, findUser.getId());
         Assertions.assertEquals(updatedProvidername, savedProvider.getUsername());
         Assertions.assertEquals(updatedEmail, savedProvider.getEmail());
     }

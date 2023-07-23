@@ -67,4 +67,24 @@ public class AdminProductService {
                 200
         );
     }
+
+    @Transactional
+    public CoreSuccessResponse deleteProduct(
+            Long id,
+            User user
+    ) {
+        Product findProduct = productRepository.findById(id).orElseThrow(
+                () -> new HttpException("해당 상품이 없습니다.", HttpStatus.NOT_FOUND)
+        );
+
+        if (user.getProvider() == ProviderEnum.FALSE){
+            throw new HttpException("PROVIDER 가 아닙니다.", HttpStatus.NOT_FOUND);
+        }
+        productRepository.delete(findProduct);
+        return new CoreSuccessResponse(
+                true,
+                "상품이 삭제되었습니다.",
+                200
+        );
+    }
 }

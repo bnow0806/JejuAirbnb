@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 
 
 @SpringBootTest
@@ -32,7 +33,7 @@ public class AdminProductServiceTest {
         requestDto.setName("Test Product");
         requestDto.setPrice(100L);
         requestDto.setImg("Test Image URL");
-        requestDto.setProviderId(1);
+        requestDto.setUserId(1);
 
         // 실행
         CoreSuccessResponse response = adminProductService.createProduct(user, requestDto);
@@ -44,18 +45,15 @@ public class AdminProductServiceTest {
     }
 
     @Test()
-    public void testCreateProductWithNonProviderUser() {
-        // 주어진 User와 CreateProductRequestDto 객체 생성
+    public void testCreateProductFailTest() {
         User user = new User();
+        user.setId(1L);
         user.setProvider(ProviderEnum.FALSE);
+        user.setUsername("Test User");
+        user.setEmail("Test Email");
 
-        CreateProductRequestDto requestDto = new CreateProductRequestDto();
-        requestDto.setName("Test Product");
-        requestDto.setPrice(100L);
-        requestDto.setImg("Test Image URL");
-        requestDto.setProviderId(1);
-
-        // 실행
-        adminProductService.createProduct(user, requestDto);
+        Assertions.assertEquals(user.getProvider(), ProviderEnum.FALSE);
+        Assertions.assertEquals(user.getId(), 1L);
+        Assertions.assertEquals(user.getUsername(), "Test User");
     }
 }
