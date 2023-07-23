@@ -30,6 +30,7 @@ public class ProductServiceTest {
     @Test
     public void testFindOneProductById() {
         // given
+
         Product mockProduct = new Product();
         mockProduct.setId(1L);
         mockProduct.setName("Test product");

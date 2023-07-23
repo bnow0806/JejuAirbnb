@@ -2,25 +2,19 @@ package com.example.jejuairbnb.services;
 
 import com.example.jejuairbnb.adminController.AdminProductDto.CreateProductDto.CreateProductRequestDto;
 import com.example.jejuairbnb.adminServices.AdminProductService;
-import com.example.jejuairbnb.domain.Product;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IProductRepository;
 import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.response.CoreSuccessResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import static org.hamcrest.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
 
 @SpringBootTest
-public class ProductServiceTest {
+public class AdminProductServiceTest {
 
     @MockBean
     private IProductRepository productRepository;
