@@ -3,12 +3,9 @@ package com.example.jejuairbnb.services;
 import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto.CreateProviderRequestDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto.CreateProviderResponseDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.FindProviderDto.FindProviderResponseDto;
-import com.example.jejuairbnb.domain.Provider;
-import com.example.jejuairbnb.repository.IProviderRepository;
-<<<<<<< HEAD
-=======
+import com.example.jejuairbnb.domain.User;
+import com.example.jejuairbnb.repository.IUserRepository;
 import com.example.jejuairbnb.shared.services.SecurityService;
->>>>>>> bec643be41f28cfa9bf27b2df79dcbfc232a7ae8
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,13 +27,13 @@ import static org.mockito.ArgumentMatchers.any;
 public class ProviderServiceTest {
 
     @MockBean // 스프링 부트 테스트에서 사용하는 목(mock) 객체를 생성하는 어노테이션입니다
-    private IProviderRepository providerRepository;
+    private IUserRepository userRepository;
     private SecurityService securityService;
     private ProviderService providerService;
 
     @BeforeEach // 각 테스트 메소드 실행 전에 호출되는 메소드를 지정
     public void setup() {
-        providerService = new ProviderService(providerRepository,securityService);
+        providerService = new ProviderService(userRepository,securityService);
     }
 
     @Test
@@ -56,14 +53,13 @@ public class ProviderServiceTest {
 
         String hashingPassword = Base64.getEncoder().encodeToString(hash);
 
-        Provider provider = Provider.builder()
-                .providername(requestDto.getProvidername())
-                .password(hashingPassword)
+        User provider = User.builder()
+                .username(requestDto.getProvidername())
                 .email(requestDto.getEmail())
                 .build();
 
-        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.empty());
-        Mockito.when(providerRepository.save(any(Provider.class))).thenReturn(provider);
+        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.empty());
+        Mockito.when(userRepository.save(any(User.class))).thenReturn(provider);
 
         CreateProviderResponseDto responseDto = providerService.registerProvider(requestDto);
 
@@ -87,13 +83,12 @@ public class ProviderServiceTest {
 
         String hashingPassword = Base64.getEncoder().encodeToString(hash);
 
-        Provider existingProvider = Provider.builder()
-                .providername(requestDto.getProvidername())
-                .password(hashingPassword)
+        User existingProvider = User.builder()
+                .username(requestDto.getProvidername())
                 .email(requestDto.getEmail())
                 .build();
 
-        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(existingProvider));
+        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(existingProvider));
         // 위에서 mock 객체를 생성했기 때문에, userRepository.findByEmail() 메소드를 호출하면
         // existingUser 객체를 리턴하도록 설정 한다.
 
@@ -127,14 +122,13 @@ public class ProviderServiceTest {
     public void testFindProviderById() {
         // given
         Long providerId = 1L;
-        Provider provider = Provider.builder()
-                .providername("testtest")
-                .password("test")
+        User provider = User.builder()
+                .username("testtest")
                 .email("test@gmail.com")
                 .build();
         provider.setId(providerId); //Added for test //AutoEncrementation
 
-        Mockito.when(providerRepository.findById(1L)).thenReturn(java.util.Optional.of(provider));
+        Mockito.when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(provider));
 
         // when
         FindProviderResponseDto findProvider = providerService.findProviderById(1L);
@@ -142,7 +136,7 @@ public class ProviderServiceTest {
         // then
         Assertions.assertNotNull(findProvider);
         Assertions.assertEquals(providerId, findProvider.getProviderId());
-        Assertions.assertEquals(provider.getProvidername(), findProvider.getProvidername());
+        Assertions.assertEquals(provider.getUsername(), findProvider.getUsername());
         Assertions.assertEquals(provider.getEmail(), provider.getEmail());
     }
 
@@ -151,7 +145,7 @@ public class ProviderServiceTest {
         // given
         Long providerId = 1L;
 
-        Mockito.when(providerRepository.findById(providerId)).thenReturn(Optional.empty());
+        Mockito.when(userRepository.findById(providerId)).thenReturn(Optional.empty());
 
         // then
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
@@ -165,32 +159,30 @@ public class ProviderServiceTest {
     public void testUpdateProvider() {
         // given
         Long providerId = 1L;
-        Provider provider = Provider.builder()
-                .providername("testtest")
-                .password("test")
+        User users = User.builder()
+                .username("testtest")
                 .email("test@gmail.com")
                 .build();
-        provider.setId(providerId); //Added for test //AutoEncrementation
+        users.setId(providerId); //Added for test //AutoEncrementation
 
         //Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        Mockito.when(providerRepository.findByEmail(provider.getEmail())).thenReturn(Optional.of(provider)); //Added for Test
-        Mockito.when(providerRepository.save(any(Provider.class))).then(AdditionalAnswers.returnsFirstArg());   //Added for test
+        Mockito.when(userRepository.save(any(User.class))).then(AdditionalAnswers.returnsFirstArg());   //Added for test
 
         // when
-        Provider findProvider = providerRepository.findByEmail(provider.getEmail()).orElse(null);
+        User findUser = userRepository.findByEmail(users.getEmail()).orElse(null);
 
         String updatedProvidername = "testtesttest";
         String updatedEmail = "update_test@gmail.com";
 
-        findProvider.setProvidername(updatedProvidername);
-        findProvider.setEmail(updatedEmail);
+        findUser.setUsername(updatedProvidername);
+        findUser.setEmail(updatedEmail);
 
-        Provider savedProvider = providerRepository.save(findProvider);
+        User savedProvider = userRepository.save(findUser);
 
         // then
-        Assertions.assertNotNull(findProvider);
-        Assertions.assertEquals(providerId, findProvider.getId());
-        Assertions.assertEquals(updatedProvidername, savedProvider.getProvidername());
+        Assertions.assertNotNull(findUser);
+        Assertions.assertEquals(providerId, findUser.getId());
+        Assertions.assertEquals(updatedProvidername, savedProvider.getUsername());
         Assertions.assertEquals(updatedEmail, savedProvider.getEmail());
     }
 }

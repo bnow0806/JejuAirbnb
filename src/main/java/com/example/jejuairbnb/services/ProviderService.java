@@ -6,8 +6,8 @@ import com.example.jejuairbnb.controller.ProviderControllerDto.FindProviderDto.F
 import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderRequestDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderResponseDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.UpdateProviderDto.UpdateProviderRequestDto;
-import com.example.jejuairbnb.domain.Provider;
-import com.example.jejuairbnb.repository.IProviderRepository;
+import com.example.jejuairbnb.domain.User;
+import com.example.jejuairbnb.repository.IUserRepository;
 import com.example.jejuairbnb.shared.exception.HttpException;
 import com.example.jejuairbnb.shared.services.SecurityService;
 import jakarta.servlet.http.Cookie;
@@ -31,7 +31,7 @@ public class ProviderService {
 
     static final String NOT_FOUND_PROVIDER = "존재하지 않는 제공자입니다.";
 
-    private final IProviderRepository providerRepository;
+    private final IUserRepository userRepository;
     private final SecurityService securityService;
 
     @Transactional
@@ -40,7 +40,7 @@ public class ProviderService {
     ) throws NoSuchAlgorithmException {
 
         System.out.println("회원가입 요청: " + requestDto);
-        providerRepository
+        userRepository
                 .findByEmail(requestDto.getEmail())
                 .orElseThrow(
                         () -> new IllegalArgumentException(DUPLICATE_EMAIL)
@@ -57,16 +57,15 @@ public class ProviderService {
 
         String hasingPassword = Base64.getEncoder().encodeToString(hash);
 
-        Provider provider = Provider.builder()
-                .providername(requestDto.getProvidername())
-                .password(hasingPassword)
+        User findUser = User.builder()
+                .username(requestDto.getProvidername())
                 .email(requestDto.getEmail())
                 .build();
 
-        Provider savedProvider = providerRepository.save(provider);
+        User savedProvider = userRepository.save(findUser);
 
         return CreateProviderResponseDto.builder()
-                .providername(savedProvider.getProvidername())
+                .providername(savedProvider.getUsername())
                 .email(savedProvider.getEmail())
                 .build();
     }
@@ -75,14 +74,14 @@ public class ProviderService {
     public FindProviderResponseDto findProviderById(
             Long providerId
     ) {
-        Provider findProvider = providerRepository.findById(providerId)
+        User findUser = userRepository.findById(providerId)
                 .orElseThrow(
                         () -> new IllegalArgumentException(NOT_FOUND_PROVIDER)
                 );
         return FindProviderResponseDto.builder()
-                .providerId(findProvider.getId())
-                .email(findProvider.getEmail())
-                .providername(findProvider.getProvidername())
+                .providerId(findUser.getId())
+                .email(findUser.getEmail())
+                .username(findUser.getUsername())
                 .build();
     }
 
@@ -90,20 +89,20 @@ public class ProviderService {
     public FindProviderResponseDto updateProvider(
             UpdateProviderRequestDto requestDto
     ) {
-        Provider findProvider = providerRepository
+        User findUser = userRepository
                 .findByEmail(requestDto.getEmail())
                 .orElseThrow(
                         () -> new IllegalArgumentException(NOT_FOUND_PROVIDER)
                 );
 
-        findProvider.setProvidername(requestDto.getProvidername());
-        findProvider.setEmail(requestDto.getEmail());
+        findUser.setUsername(requestDto.getProvidername());
+        findUser.setEmail(requestDto.getEmail());
 
-        Provider savedProvider = providerRepository.save(findProvider);
+        User savedProvider = userRepository.save(findUser);
         return FindProviderResponseDto.builder()
                 .providerId(savedProvider.getId())
                 .email(savedProvider.getEmail())
-                .providername(savedProvider.getProvidername())
+                .username(savedProvider.getUsername())
                 .build();
     }
 
@@ -117,20 +116,17 @@ public class ProviderService {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
 
-            String hashingPassword = Base64.getEncoder().encodeToString(hash);
+            User findUser = userRepository.findByEmail(requestDto.getEmail())
+                    .orElseThrow(() -> new HttpException(
+                            false,
+                            "가입되어있지 않은 유저 입니다.",
+                            HttpStatus.BAD_REQUEST
+                    ));
 
-            Provider provider = providerRepository.findByEmail(requestDto.getEmail())
-                   .map(db-> {
-                       if(!hashingPassword.equals(db.getPassword())) {
-                            throw new HttpException("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
-                        }
-                        return db;
-                    }).orElseThrow(() -> new HttpException("가입되어있지 않은 유저 입니다.", HttpStatus.BAD_REQUEST));
-
-            String getToken = securityService.createToken(provider.getEmail());
+            String getToken = securityService.createToken(findUser.getEmail());
 
             LoginProviderResponseDto responseDto = new LoginProviderResponseDto();
-            responseDto.setEmail(provider.getEmail());
+            responseDto.setEmail(findUser.getEmail());
             responseDto.setToken(getToken);
 
             Cookie cookie = new Cookie("access-token", String.valueOf(getToken));

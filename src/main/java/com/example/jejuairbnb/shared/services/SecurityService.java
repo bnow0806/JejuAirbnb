@@ -1,7 +1,7 @@
 package com.example.jejuairbnb.shared.services;
 
-import com.example.jejuairbnb.domain.Provider;
-import com.example.jejuairbnb.repository.IProviderRepository;
+import com.example.jejuairbnb.domain.User;
+import com.example.jejuairbnb.repository.IUserRepository;
 import com.example.jejuairbnb.shared.exception.HttpException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -25,11 +25,10 @@ public class SecurityService {
     private String SECRET_KEY;
     private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24;
 
-    private final IProviderRepository providerRepository;
+    private final IUserRepository userRepository;
 
     public String createToken(String subject) {
 
-        System.out.println("createToken subject"+subject);
         if (EXPIRATION_TIME <= 0) {
             throw new RuntimeException("Expiratio time must be greater than zero!");
         }
@@ -45,24 +44,27 @@ public class SecurityService {
                 .compact();
     }
 
-    public Provider getSubject(String token) {
+    public User getSubject(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
 
-        return providerRepository
-                .findByEmail(claims.getSubject())
+        return userRepository.findByEmail(claims.getSubject())
                 .orElseThrow(
-                        () -> new HttpException("존재하지 않는 제공자입니다.", HttpStatus.NOT_FOUND)
+                        () -> new HttpException(
+                                false,
+                                "존재하지 않은 사용자입니다.",
+                                HttpStatus.NOT_FOUND
+                        )
                 );
     }
 
     public String getTokenByCookie(Cookie[] cookies) {
         String token = null;
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("token")) {
+            if (cookie.getName().equals("access-token")) {
                 token = cookie.getValue();
             }
         }

@@ -95,5 +95,4 @@ public class UserService {
                 })
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_USER));
     }
-
 }

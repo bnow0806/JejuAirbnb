@@ -19,7 +19,11 @@ public class ProductService {
     ) {
         System.out.println("상품 조회 요청: " + id);
         Product findProduct = productRepository.findById(id)
-                .orElseThrow(() -> new HttpException("존재하지 않는 상품입니다.", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new HttpException(
+                        false,
+                        "존재하지 않는 상품입니다.",
+                        HttpStatus.NOT_FOUND
+                ));
 
         FindProductOneResponseDto findProductOneResponseDto = new FindProductOneResponseDto();
         findProductOneResponseDto.setName(findProduct.getName());
@@ -30,7 +34,6 @@ public class ProductService {
     }
 
     public FindProductResponseDto findProduct() {
-        System.out.println("상품 목록 조회 요청");
         FindProductResponseDto findProductResponseDto = new FindProductResponseDto();
         findProductResponseDto.setProducts(productRepository.findAll());
 

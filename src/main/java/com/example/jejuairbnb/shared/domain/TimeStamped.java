@@ -18,4 +18,6 @@ public abstract class TimeStamped {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    private LocalDateTime deletedAt;
 }

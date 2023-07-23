@@ -2,12 +2,16 @@ package com.example.jejuairbnb.domain;
 
 import com.example.jejuairbnb.shared.domain.TimeStamped;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "products")
 public class Product extends TimeStamped {
     @Id
@@ -23,6 +27,6 @@ public class Product extends TimeStamped {
     @Column(name = "img")
     private String img;
 
-    @Column(name = "provider_id")
-    private String providerId;
+    @Column(name = "user_id")
+    private Long userId;
 }
