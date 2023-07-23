@@ -4,21 +4,10 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class FindProviderResponseDto {
 
     private Long providerId;
     private String email;
-
-    private String providername;
-
-    @Builder
-    public FindProviderResponseDto(
-            Long providerId,
-            String email,
-            String providername
-    ) {
-        this.providerId = providerId;
-        this.email = email;
-        this.providername = providername;
-    }
+    private String username;
 }

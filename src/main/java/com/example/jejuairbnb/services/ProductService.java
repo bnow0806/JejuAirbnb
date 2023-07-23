@@ -30,7 +30,6 @@ public class ProductService {
     }
 
     public FindProductResponseDto findProduct() {
-        System.out.println("상품 목록 조회 요청");
         FindProductResponseDto findProductResponseDto = new FindProductResponseDto();
         findProductResponseDto.setProducts(productRepository.findAll());
 

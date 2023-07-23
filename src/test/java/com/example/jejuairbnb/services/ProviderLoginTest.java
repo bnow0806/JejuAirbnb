@@ -3,10 +3,9 @@ package com.example.jejuairbnb.services;
 import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto.CreateProviderRequestDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderRequestDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderResponseDto;
-import com.example.jejuairbnb.domain.Provider;
 import com.example.jejuairbnb.domain.User;
-import com.example.jejuairbnb.repository.IProviderRepository;
 import com.example.jejuairbnb.repository.IUserRepository;
+import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.services.SecurityService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Assertions;
@@ -21,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,17 +32,13 @@ import static org.mockito.Mockito.mock;
 public class ProviderLoginTest {
 
     @MockBean // 스프링 부트 테스트에서 사용하는 목(mock) 객체를 생성하는 어노테이션입니다
-    private IProviderRepository providerRepository;
+    private IUserRepository userRepository;
     private SecurityService securityService;
     private ProviderService providerService;
 
-    @MockBean
-    private IUserRepository userRepository;
-
     @BeforeEach // 각 테스트 메소드 실행 전에 호출되는 메소드를 지정
     public void setup() {
-        securityService = new SecurityService(providerRepository);
-        providerService = new ProviderService(providerRepository, securityService);
+        securityService = new SecurityService(userRepository);
     }
 
     @Test
@@ -100,27 +96,23 @@ public class ProviderLoginTest {
 
         String hashingPassword = Base64.getEncoder().encodeToString(hash);
 
-        Provider existingProvider = Provider.builder()
-                .providername(requestDto.getProvidername())
-                .password(hashingPassword)
+        User existingProvider = User.builder()
+                .username(requestDto.getProvidername())
                 .email(requestDto.getEmail())
                 //.email("test2@gmail.com")
                 .build();
 
-        // TODO : 회원 탈퇴 과정에서 진행 -> Service로 만들기
-        existingProvider.setUnregisteredID(1L);
-
-        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(existingProvider));
+        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(existingProvider));
 
         // 2. 회원 탈퇴 이메일로 신규 가입 요청
         // register 과정 에서 findProvider 찾기   //sqve되면 안되므로 우선 찾기만 -> register에 추후 등록
         // when
-        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
+        User findUser = userRepository.findByEmail(requestDto.getEmail()).orElse(null);
+        findUser.setProvider(ProviderEnum.TRUE);
 
         // 3. unregisteredID 인지 확인
         // then
-        Long unregisteredID = findProvider.getUnregisteredID();
-        Assertions.assertEquals(1L, unregisteredID);
+        Assertions.assertEquals(1L, findUser.getId());
     }
 
     @Test
@@ -136,28 +128,24 @@ public class ProviderLoginTest {
                 .build();
 
         Long providerId = 1L;
-        Provider provider = Provider.builder()
-                .providername("testtest")
-                .password("test")
+        User provider = User.builder()
+                .username("testtest")
                 .email("test@gmail.com")
                 .build();
         provider.setId(providerId); //Added for test //AutoEncrementation
 
-        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(provider));
-        Mockito.when(providerRepository.save(any(Provider.class))).then(AdditionalAnswers.returnsFirstArg());
+        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(provider));
+        Mockito.when(userRepository.save(any(User.class))).then(AdditionalAnswers.returnsFirstArg());
 
         // when
-        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
+        User findProvider = userRepository.findByEmail(requestDto.getEmail()).orElse(null);
 
-        Long updatedUnregisteredID = 1L;
-        findProvider.setUnregisteredID(updatedUnregisteredID);
-
-        Provider savedProvider = providerRepository.save(findProvider);
+        User savedProvider = userRepository.save(findProvider);
 
         // then
         Assertions.assertNotNull(findProvider);
         Assertions.assertEquals(providerId, findProvider.getId());
-        Assertions.assertEquals(updatedUnregisteredID, savedProvider.getUnregisteredID());
+        Assertions.assertEquals(ProviderEnum.TRUE, savedProvider.getProvider());
     }
 
     @Test
@@ -175,18 +163,17 @@ public class ProviderLoginTest {
                 .build();
 
         Long providerId = 1L;
-        Provider provider = Provider.builder()
-                .providername("testtest")
-                .password("test")
+        User provider = User.builder()
+                .username("testtest")
                 .email("test@gmail.com")
                 .build();
         provider.setId(providerId); //Added for test //AutoEncrementation
 
-        Mockito.when(providerRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(provider));
+        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(provider));
         Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(null);
 
         // when
-        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
+        User findProvider = userRepository.findByEmail(requestDto.getEmail()).orElse(null);
         Optional<User> findUser = userRepository.findByEmail(requestDto.getEmail());
 
         //then
@@ -209,16 +196,15 @@ public class ProviderLoginTest {
 
         String hashingPassword = Base64.getEncoder().encodeToString(hash);
 
-        Provider existingProvider = Provider.builder()
-                .providername("test")
-                .password(hashingPassword)
+        User existingProvider = User.builder()
+                .username("test")
                 .email(requestDto.getEmail())
                 .build();
 
         //HttpServletResponse
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        Mockito.when(providerRepository.findByEmail(requestDto.getEmail()))
+        Mockito.when(userRepository.findByEmail(requestDto.getEmail()))
                 .thenReturn(Optional.of(existingProvider));
 
         // when
@@ -230,9 +216,9 @@ public class ProviderLoginTest {
         Assertions.assertNotNull(loginProviderResponseDto.getToken());
         // 3. unregistedID 인지 확인
         // then
-        Provider findProvider = providerRepository.findByEmail(requestDto.getEmail()).orElse(null);
-        Long unregistedID = findProvider.getUnregisteredID();
-        Assertions.assertEquals(1L, unregistedID);
+        User findProvider = userRepository.findByEmail(requestDto.getEmail()).orElse(null);
+        ProviderEnum providerEnum = Objects.requireNonNull(findProvider).getProvider();
+        Assertions.assertEquals(ProviderEnum.TRUE, providerEnum);
     }
 
 

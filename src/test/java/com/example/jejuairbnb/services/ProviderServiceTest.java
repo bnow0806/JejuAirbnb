@@ -3,12 +3,7 @@ package com.example.jejuairbnb.services;
 import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto.CreateProviderRequestDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto.CreateProviderResponseDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.FindProviderDto.FindProviderResponseDto;
-import com.example.jejuairbnb.domain.Provider;
-import com.example.jejuairbnb.repository.IProviderRepository;
-<<<<<<< HEAD
-=======
 import com.example.jejuairbnb.shared.services.SecurityService;
->>>>>>> bec643be41f28cfa9bf27b2df79dcbfc232a7ae8
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
