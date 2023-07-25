@@ -1,6 +1,6 @@
 package com.example.jejuairbnb.services;
 
-import com.example.jejuairbnb.controller.ProductControllerDto.FindProductDto.FindProductOneResponseDto;
+import com.example.jejuairbnb.controller.ProductControllerDto.FindProductOneResponseDto;
 import com.example.jejuairbnb.domain.Product;
 import com.example.jejuairbnb.repository.IProductRepository;
 import org.junit.jupiter.api.Assertions;

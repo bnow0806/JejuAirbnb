@@ -1,7 +1,7 @@
 package com.example.jejuairbnb.services;
 
-import com.example.jejuairbnb.controller.ProductControllerDto.FindProductDto.FindProductOneResponseDto;
-import com.example.jejuairbnb.controller.ProductControllerDto.FindProductDto.FindProductResponseDto;
+import com.example.jejuairbnb.controller.ProductControllerDto.FindProductOneResponseDto;
+import com.example.jejuairbnb.controller.ProductControllerDto.FindProductResponseDto;
 import com.example.jejuairbnb.domain.Product;
 import com.example.jejuairbnb.repository.IProductRepository;
 import com.example.jejuairbnb.shared.exception.HttpException;
@@ -17,26 +17,26 @@ public class ProductService {
     public FindProductOneResponseDto findProductOneById(
             Long id
     ) {
-        System.out.println("상품 조회 요청: " + id);
         Product findProduct = productRepository.findById(id)
                 .orElseThrow(() -> new HttpException(
                         false,
                         "존재하지 않는 상품입니다.",
                         HttpStatus.NOT_FOUND
                 ));
-
-        FindProductOneResponseDto findProductOneResponseDto = new FindProductOneResponseDto();
-        findProductOneResponseDto.setName(findProduct.getName());
-        findProductOneResponseDto.setImg(findProduct.getImg());
-        findProductOneResponseDto.setPrice(findProduct.getPrice());
-
-        return findProductOneResponseDto;
+		return FindProductOneResponseDto
+                .builder()
+                .name(findProduct.getName())
+                .description(findProduct.getDescription())
+                .price(findProduct.getPrice())
+                .img(findProduct.getImg())
+                .build();
     }
 
     public FindProductResponseDto findProduct() {
-        FindProductResponseDto findProductResponseDto = new FindProductResponseDto();
-        findProductResponseDto.setProducts(productRepository.findAll());
 
-        return findProductResponseDto;
+        return FindProductResponseDto
+                .builder()
+                .products(productRepository.findAll())
+                .build();
     }
 }
