@@ -45,22 +45,18 @@ public class ProviderLoginTest {
     public void testEmailForm() throws NoSuchAlgorithmException{
 
         // given
-        CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
-                .username("test")
-                .email("test@gmail.com")
-                .build();
+        String email = "ash@gmail.com";
+        String username = "ash";
 
         // when
-        boolean chekEmailFormResult = chekEmailForm(requestDto);
+        boolean chekEmailFormResult = chekEmailForm(email);
 
         //정규 표현식 확인
         // then
         Assertions.assertTrue(chekEmailFormResult);
     }
 
-    private boolean chekEmailForm(CreateProviderRequestDto requestDto){
-
-        String email = requestDto.getEmail();
+    private boolean chekEmailForm(String email){
 
         String regx = "^(.+)@(.+)$";
 
@@ -82,23 +78,20 @@ public class ProviderLoginTest {
 
         // given
         // 1. 회원 탈퇴한 객체 생성
-        CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
-                .username("test")
-                .email("test@gmail.com")
-                .build();
+        String email = "";
+        String username = "";
 
         User existingProvider = User.builder()
-                .username(requestDto.getUsername())
-                .email(requestDto.getEmail())
-                //.email("test2@gmail.com")
+                .username(username)
+                .email(email)
                 .build();
 
-        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(existingProvider));
+        Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.of(existingProvider));
 
         // 2. 회원 탈퇴 이메일로 신규 가입 요청
         // register 과정 에서 findProvider 찾기   //sqve되면 안되므로 우선 찾기만 -> register에 추후 등록
         // when
-        User findUser = userRepository.findByEmail(requestDto.getEmail()).orElse(null);
+        User findUser = userRepository.findByEmail(email).orElse(null);
         findUser.setProvider(ProviderEnum.TRUE);
 
         // 3. unregisteredID 인지 확인
@@ -111,23 +104,23 @@ public class ProviderLoginTest {
         //id, pw 입력하여 객체를 찾음
         //unregisteredID 를 1로 만듬
         // given
-        CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
-                .username("test")
-                .email("test@gmail.com")
-                .build();
+
+        String email = "ash";
+        String username = "ash@gmail.com";
 
         Long providerId = 1L;
         User provider = User.builder()
                 .username("testtest")
                 .email("test@gmail.com")
                 .build();
+
         provider.setId(providerId); //Added for test //AutoEncrementation
 
-        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(provider));
+        Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.of(provider));
         Mockito.when(userRepository.save(any(User.class))).then(AdditionalAnswers.returnsFirstArg());
 
         // when
-        User findProvider = userRepository.findByEmail(requestDto.getEmail()).orElse(null);
+        User findProvider = userRepository.findByEmail(email).orElse(null);
 
         User savedProvider = userRepository.save(findProvider);
 
@@ -144,24 +137,22 @@ public class ProviderLoginTest {
         //2. User DB Table에 값이 없는지 확인
 
         //given
-        CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
-                .username("test")
-                .email("test@gmail.com")
-                .build();
+        String email = "ash@gmail.com";
 
         Long providerId = 1L;
         User provider = User.builder()
                 .username("testtest")
                 .email("test@gmail.com")
                 .build();
+
         provider.setId(providerId); //Added for test //AutoEncrementation
 
-        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(provider));
-        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(null);
+        Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.of(provider));
+        Mockito.when(userRepository.findByEmail(email)).thenReturn(null);
 
         // when
-        User findProvider = userRepository.findByEmail(requestDto.getEmail()).orElse(null);
-        Optional<User> findUser = userRepository.findByEmail(requestDto.getEmail());
+        User findProvider = userRepository.findByEmail(email).orElse(null);
+        Optional<User> findUser = userRepository.findByEmail(email);
 
         //then
         Assertions.assertNotNull(findProvider);

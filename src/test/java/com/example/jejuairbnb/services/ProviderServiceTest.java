@@ -30,10 +30,11 @@ public class ProviderServiceTest {
     private IUserRepository userRepository;
     private SecurityService securityService;
     private ProviderService providerService;
+    private SocialLoginService socialLoginService;
 
     @BeforeEach // 각 테스트 메소드 실행 전에 호출되는 메소드를 지정
     public void setup() {
-        providerService = new ProviderService(userRepository,securityService);
+        providerService = new ProviderService(userRepository, socialLoginService, securityService);
     }
 
     @Test
@@ -67,6 +68,13 @@ public class ProviderServiceTest {
         User existingProvider = User.builder()
                 .username("ash")
                 .email("ash@gmail.com")
+                .kakaoAuthId("asdlfkasdfkljhasdkfjhasdkjfh")
+                .build();
+
+        String kakaoToken = existingProvider.getKakaoAuthId();
+
+        CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
+                .kakaoToken(kakaoToken)
                 .build();
 
         Mockito.when(userRepository.findByEmail(existingProvider.getEmail())).thenReturn(Optional.of(existingProvider));
@@ -76,7 +84,7 @@ public class ProviderServiceTest {
         // then
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
             // when
-            providerService.registerProvider(existingProvider);
+            providerService.registerProvider(requestDto);
         });
         Assertions.assertEquals(DUPLICATE_EMAIL, exception.getMessage());
     }
