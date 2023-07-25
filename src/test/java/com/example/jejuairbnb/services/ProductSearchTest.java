@@ -81,10 +81,10 @@ public class ProductSearchTest
 
         List<Product> mockProducts = Arrays.asList(mockProduct1, mockProduct3);
 
-        Mockito.when(productRepository.findByKeywordUserId(1L)).thenReturn(mockProducts);
+        Mockito.when(productRepository.findByProduct_UserId(1L)).thenReturn(mockProducts);
 
         // When
-        List<Product> products = productRepository.findByKeywordUserId(1L);
+        List<Product> products = productRepository.findByProduct_UserId(1L);
         //System.out.println("(Debug) products "+products);
 
         // Then
