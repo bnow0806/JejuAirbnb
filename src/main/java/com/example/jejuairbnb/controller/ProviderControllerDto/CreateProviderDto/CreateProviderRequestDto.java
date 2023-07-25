@@ -1,25 +1,14 @@
 package com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto;
 
+import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class CreateProviderRequestDto {
-    private String providername;
-    private String password;
+    private String username;
     private String email;
-    private String rePassword;
-
-    @Builder
-    public CreateProviderRequestDto(
-            String providername,
-            String password,
-            String email,
-            String rePassword
-    ) {
-        this.providername = providername;
-        this.password = password;
-        this.email = email;
-        this.rePassword = rePassword;
-    }
+    private ProviderEnum provider;
+    private String kakaoAuthId;
 }

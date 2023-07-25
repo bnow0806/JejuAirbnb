@@ -3,21 +3,15 @@ package com.example.jejuairbnb.domain;
 import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.domain.TimeStamped;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Entity
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "users")
 public class User extends TimeStamped {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
@@ -35,7 +29,18 @@ public class User extends TimeStamped {
     @Column(name = "kakao_auth_id")
     private String kakaoAuthId;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private LocalDateTime deletedAt;
+    @Builder
+    public User(
+            String username,
+            String email,
+            ProviderEnum provider,
+            String kakaoAuthId
+    ) {
+        this.username = username;
+        this.email = email;
+        this.provider = provider;
+        this.kakaoAuthId = kakaoAuthId;
+    }
 }
+
+

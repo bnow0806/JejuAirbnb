@@ -19,8 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 @Service
 @AllArgsConstructor
@@ -37,32 +35,30 @@ public class ProviderService {
     @Transactional
     public CreateProviderResponseDto registerProvider(
             CreateProviderRequestDto requestDto
-    ) throws NoSuchAlgorithmException {
-
-        System.out.println("회원가입 요청: " + requestDto);
+    ) {
         userRepository
                 .findByEmail(requestDto.getEmail())
                 .orElseThrow(
                         () -> new IllegalArgumentException(DUPLICATE_EMAIL)
                 );
 
-        String password = requestDto.getPassword();
-
-        if (!password.equals(requestDto.getRePassword())) {
-            throw new IllegalArgumentException(INVALID_PASSWORD);
-        }
-
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-
-        String hasingPassword = Base64.getEncoder().encodeToString(hash);
-
-        User findUser = User.builder()
-                .username(requestDto.getProvidername())
+		CreateProviderRequestDto createProviderRequestDto = CreateProviderRequestDto
+                .builder()
+                .username(requestDto.getUsername())
                 .email(requestDto.getEmail())
+                .provider(requestDto.getProvider())
+                .kakaoAuthId(requestDto.getKakaoAuthId())
                 .build();
 
-        User savedProvider = userRepository.save(findUser);
+        User newUser = User
+                .builder()
+                .username(requestDto.getUsername())
+                .email(requestDto.getEmail())
+                .provider(requestDto.getProvider())
+                .kakaoAuthId(requestDto.getKakaoAuthId())
+                .build();
+
+        User savedProvider = userRepository.save(newUser);
 
         return CreateProviderResponseDto.builder()
                 .providername(savedProvider.getUsername())
