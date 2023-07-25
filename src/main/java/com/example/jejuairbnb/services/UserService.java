@@ -6,6 +6,10 @@ import com.example.jejuairbnb.controller.UserControllerDto.FindUserDto.FindUserR
 import com.example.jejuairbnb.controller.UserControllerDto.UpdateUserDto.UpdateUserRequestDto;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IUserRepository;
+import com.example.jejuairbnb.shared.Enum.ProviderEnum;
+import com.example.jejuairbnb.shared.services.SecurityService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,43 +29,61 @@ public class UserService {
 
     private final IUserRepository userRepository;
     private final SocialLoginService socialLoginService;
+    private final SecurityService securityService;
+
 
     @Transactional
     public CreateUserResponseDto registerUser(
-            CreateUserRequestDto requestDto
+            CreateUserRequestDto requestDto,
+            HttpServletResponse response
     ) {
-        System.out.println("회원가입 요청: " + requestDto);
+        System.out.println(requestDto);
         String kakaoToken = requestDto.getKakaoToken();
-//      kakaoToken 을 이용해서 카카오 API 를 호출해서 유저 정보를 가져온다.
         Map<String, Object> responseKakaoData = socialLoginService.kakaoCallback(kakaoToken);
         if (responseKakaoData == null) {
             throw new NotFoundException(DOES_NOT_FOUND_KAKAO_TOKEN);
         }
 
         String kakaoAuthId = responseKakaoData.get("id").toString();
-
+        User findUserByKakaoAuthId = userRepository.findByKakaoAuthId(kakaoAuthId)
+                .orElse(null);
         Optional<Map<String, Object>> kakaoAccountOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("kakao_account"));
         String email = kakaoAccountOptional.map(kakaoAccount -> kakaoAccount.get("email").toString()).orElse(null);
 
         Optional<Map<String, Object>> propertiesOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("properties"));
         String nickname = propertiesOptional.map(properties -> properties.get("nickname").toString()).orElse(null);
 
-        User findUser = (User) userRepository.findByEmail(email)
-                .map(user -> {
-                    throw new IllegalArgumentException(DUPLICATE_EMAIL);
-                })
-                .orElseGet(() -> User.builder()
-                        .username(nickname)
-                        .email(email)
-                        .kakaoAuthId(kakaoAuthId)
-                        .build());
-//       주석 달았다
-        User savedUser = userRepository.save(findUser);
+        if (findUserByKakaoAuthId == null) {
+//           회원가입을 시킨다.
+            User newUser = User
+                    .builder()
+                    .username(nickname)
+                    .email(email)
+                    .kakaoAuthId(kakaoAuthId)
+                    .provider(ProviderEnum.FALSE)
+                    .build();
 
-        return CreateUserResponseDto.builder()
-                .username(savedUser.getUsername())
-                .email(savedUser.getEmail())
-                .build();
+            User savedUser = userRepository.save(newUser);
+
+            return new CreateUserResponseDto(
+                    savedUser.getUsername(),
+                    savedUser.getEmail()
+            );
+        } else {
+//            로그인을 시킨다.
+            String getToken = securityService.createToken(email);
+            Cookie cookie = new Cookie("access-token", String.valueOf(getToken));
+            cookie.setMaxAge(60 * 60 * 24);
+            cookie.setPath("/");
+            cookie.setHttpOnly(true);
+            response.addCookie(cookie);
+
+            return CreateUserResponseDto
+                    .builder()
+                    .email(email)
+                    .username(nickname)
+                    .build();
+        }
     }
 
     @Transactional

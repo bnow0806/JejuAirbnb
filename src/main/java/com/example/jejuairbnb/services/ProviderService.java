@@ -4,7 +4,7 @@ import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto
 import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto.CreateProviderResponseDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.FindProviderDto.FindProviderResponseDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderRequestDto;
-import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderResponseDto;
+import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginResponseDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.UpdateProviderDto.UpdateProviderRequestDto;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IUserRepository;
@@ -103,7 +103,7 @@ public class ProviderService {
     }
 
     @Transactional
-    public LoginProviderResponseDto loginProvider(
+    public LoginResponseDto loginProvider(
             LoginProviderRequestDto requestDto,
             HttpServletResponse response
     ){
@@ -121,7 +121,7 @@ public class ProviderService {
 
             String getToken = securityService.createToken(findUser.getEmail());
 
-            LoginProviderResponseDto responseDto = new LoginProviderResponseDto();
+            LoginResponseDto responseDto = new LoginResponseDto();
             responseDto.setEmail(findUser.getEmail());
             responseDto.setToken(getToken);
 

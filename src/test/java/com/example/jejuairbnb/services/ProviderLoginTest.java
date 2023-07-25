@@ -2,7 +2,7 @@ package com.example.jejuairbnb.services;
 
 import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto.CreateProviderRequestDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderRequestDto;
-import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderResponseDto;
+import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginResponseDto;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IUserRepository;
 import com.example.jejuairbnb.shared.Enum.ProviderEnum;
@@ -208,7 +208,7 @@ public class ProviderLoginTest {
                 .thenReturn(Optional.of(existingProvider));
 
         // when
-        LoginProviderResponseDto loginProviderResponseDto = providerService.loginProvider(requestDto, response);
+        LoginResponseDto loginProviderResponseDto = providerService.loginProvider(requestDto, response);
 
         // then
         Assertions.assertNotNull(loginProviderResponseDto);

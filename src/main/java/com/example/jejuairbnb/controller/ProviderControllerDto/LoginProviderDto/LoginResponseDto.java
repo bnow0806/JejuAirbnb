@@ -1,10 +1,9 @@
 package com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto;
 
-import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class LoginProviderResponseDto
+public class LoginResponseDto
 {
     private String email;
     private String token;

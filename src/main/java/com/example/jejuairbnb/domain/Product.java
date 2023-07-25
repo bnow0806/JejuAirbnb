@@ -1,5 +1,6 @@
 package com.example.jejuairbnb.domain;
 
+import com.example.jejuairbnb.shared.Enum.PositionEnum;
 import com.example.jejuairbnb.shared.domain.TimeStamped;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -18,6 +19,10 @@ public class Product extends TimeStamped {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "position")
+    @Enumerated(EnumType.STRING)
+    private PositionEnum position;
+
     @Column(name = "description")
     private String description;
 
@@ -34,12 +39,14 @@ public class Product extends TimeStamped {
     public Product(
             String name,
             String description,
+            PositionEnum position,
             int price,
             String img,
             Long userId
     ) {
         this.name = name;
         this.description = description;
+        this.position = position;
         this.price = price;
         this.img = img;
         this.userId = userId;

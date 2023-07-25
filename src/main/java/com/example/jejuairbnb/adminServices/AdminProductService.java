@@ -81,6 +81,7 @@ public class AdminProductService {
         findProduct.setName(updateProductRequestDto.getName());
         findProduct.setPrice(updateProductRequestDto.getPrice());
         findProduct.setImg(updateProductRequestDto.getImg());
+        findProduct.setUserId(user.getId());
         productRepository.save(findProduct);
 
         return new CoreSuccessResponse(

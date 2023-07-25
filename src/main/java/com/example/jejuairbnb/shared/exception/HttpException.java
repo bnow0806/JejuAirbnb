@@ -4,8 +4,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-@NoArgsConstructor
 @Data
+@NoArgsConstructor
 public class HttpException extends RuntimeException {
     private boolean ok;
     private String message;
