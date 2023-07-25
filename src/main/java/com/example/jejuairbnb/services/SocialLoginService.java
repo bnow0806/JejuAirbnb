@@ -1,5 +1,6 @@
 package com.example.jejuairbnb.services;
 
+import com.example.jejuairbnb.shared.exception.HttpException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -28,16 +29,29 @@ public class SocialLoginService {
 
         try {
             // Send a request
-            ResponseEntity<Map> responseEntity = restTemplate.exchange(requestUrl, HttpMethod.POST, entity, Map.class);
+            ResponseEntity<Map> responseEntity = restTemplate.exchange(
+                    requestUrl,
+                    HttpMethod.POST,
+                    entity,
+                    Map.class
+            );
 
             if (!responseEntity.getStatusCode().equals(HttpStatus.OK)) {
-                throw new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Kakao login error");
+                throw new HttpException(
+                        false,
+                        "Kakao login error",
+                        HttpStatus.INTERNAL_SERVER_ERROR
+                );
             }
 
             Map<String, Object> responseBody = responseEntity.getBody();
 
             if(responseBody == null || !responseBody.containsKey("id")) {
-                throw new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Kakao login error");
+                throw new HttpException(
+                        false,
+                        "Kakao login error",
+                        HttpStatus.INTERNAL_SERVER_ERROR
+                );
             }
 
             return responseBody;
@@ -45,6 +59,10 @@ public class SocialLoginService {
         } catch (HttpClientErrorException e) {
             // Handle error
             System.out.println("error: " + e.getMessage());
-            throw new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Kakao login error");
+            throw new HttpException(
+                    false,
+                    "Kakao login error",
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }}
