@@ -40,6 +40,7 @@ public class UserService {
         System.out.println(requestDto);
         String kakaoToken = requestDto.getKakaoToken();
         Map<String, Object> responseKakaoData = socialLoginService.kakaoCallback(kakaoToken);
+
         if (responseKakaoData == null) {
             throw new NotFoundException(DOES_NOT_FOUND_KAKAO_TOKEN);
         }

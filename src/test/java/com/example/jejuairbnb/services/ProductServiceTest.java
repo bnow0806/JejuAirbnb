@@ -35,7 +35,7 @@ public class ProductServiceTest {
         mockProduct.setId(1L);
         mockProduct.setName("Test product");
         mockProduct.setImg("Test image");
-        mockProduct.setPrice(100L);
+        mockProduct.setPrice(100);
         Mockito.when(productRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(mockProduct));
 
         // When
@@ -55,13 +55,13 @@ public class ProductServiceTest {
         mockProduct1.setId(1L);
         mockProduct1.setName("Test product 1");
         mockProduct1.setImg("Test image 1");
-        mockProduct1.setPrice(100L);
+        mockProduct1.setPrice(100);
 
         Product mockProduct2 = new Product();
         mockProduct2.setId(2L);
         mockProduct2.setName("Test product 2");
         mockProduct2.setImg("Test image 2");
-        mockProduct2.setPrice(200L);
+        mockProduct2.setPrice(200);
 
         List<Product> mockProducts = Arrays.asList(mockProduct1, mockProduct2);
         Mockito.when(productRepository.findAll()).thenReturn(mockProducts);

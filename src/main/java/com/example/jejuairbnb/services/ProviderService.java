@@ -8,6 +8,7 @@ import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.
 import com.example.jejuairbnb.controller.ProviderControllerDto.UpdateProviderDto.UpdateProviderRequestDto;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IUserRepository;
+import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.exception.HttpException;
 import com.example.jejuairbnb.shared.services.SecurityService;
 import jakarta.servlet.http.Cookie;
@@ -16,9 +17,14 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.webjars.NotFoundException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Map;
+import java.util.Optional;
+
+import static com.example.jejuairbnb.services.SocialLoginService.DOES_NOT_FOUND_KAKAO_TOKEN;
 
 @Service
 @AllArgsConstructor
@@ -30,32 +36,44 @@ public class ProviderService {
     static final String NOT_FOUND_PROVIDER = "존재하지 않는 제공자입니다.";
 
     private final IUserRepository userRepository;
+    private final SocialLoginService socialLoginService;
     private final SecurityService securityService;
 
     @Transactional
     public CreateProviderResponseDto registerProvider(
             CreateProviderRequestDto requestDto
     ) {
-        userRepository
-                .findByEmail(requestDto.getEmail())
-                .orElseThrow(
-                        () -> new IllegalArgumentException(DUPLICATE_EMAIL)
-                );
+        String kakaoToken = requestDto.getKakaoToken();
+        Map<String, Object> responseKakaoData = socialLoginService.kakaoCallback(kakaoToken);
 
-		CreateProviderRequestDto createProviderRequestDto = CreateProviderRequestDto
-                .builder()
-                .username(requestDto.getUsername())
-                .email(requestDto.getEmail())
-                .provider(requestDto.getProvider())
-                .kakaoAuthId(requestDto.getKakaoAuthId())
-                .build();
+        if (responseKakaoData == null) {
+            throw new NotFoundException(DOES_NOT_FOUND_KAKAO_TOKEN);
+        }
+
+        String kakaoAuthId = responseKakaoData.get("id").toString();
+
+        User findUserByKakaoAuthId = userRepository.findByKakaoAuthId(kakaoAuthId)
+                .orElse(null);
+        if (findUserByKakaoAuthId != null) {
+            throw new HttpException(
+                    false,
+                    "이미 가입된 유저입니다.",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
+        Optional<Map<String, Object>> kakaoAccountOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("kakao_account"));
+        String email = kakaoAccountOptional.map(kakaoAccount -> kakaoAccount.get("email").toString()).orElse(null);
+
+        Optional<Map<String, Object>> propertiesOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("properties"));
+        String nickname = propertiesOptional.map(properties -> properties.get("nickname").toString()).orElse(null);
 
         User newUser = User
                 .builder()
-                .username(requestDto.getUsername())
-                .email(requestDto.getEmail())
-                .provider(requestDto.getProvider())
-                .kakaoAuthId(requestDto.getKakaoAuthId())
+                .username(nickname)
+                .email(email)
+                .kakaoAuthId(kakaoAuthId)
+                .provider(ProviderEnum.TRUE)
                 .build();
 
         User savedProvider = userRepository.save(newUser);

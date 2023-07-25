@@ -42,80 +42,43 @@ public class ProviderServiceTest {
     {
         // given
         CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
-                .providername("test")
-                .password("test")
-                .rePassword("test")
-                .email("test@gmail.com")
+                .kakaoToken("asdlfkasdfkljhasdkfjhasdkjfh")
                 .build();
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
+        // when
 
-        String hashingPassword = Base64.getEncoder().encodeToString(hash);
 
         User provider = User.builder()
-                .username(requestDto.getProvidername())
-                .email(requestDto.getEmail())
+                .kakaoAuthId(requestDto.getKakaoToken())
                 .build();
 
-        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.empty());
+        Mockito.when(userRepository.findByEmail(requestDto.getKakaoToken())).thenReturn(Optional.empty());
         Mockito.when(userRepository.save(any(User.class))).thenReturn(provider);
 
         CreateProviderResponseDto responseDto = providerService.registerProvider(requestDto);
 
         Assertions.assertNotNull(responseDto);
-        Assertions.assertEquals(requestDto.getProvidername(), responseDto.getProvidername());
-        Assertions.assertEquals(requestDto.getEmail(), responseDto.getEmail());
+        Assertions.assertEquals(requestDto.getKakaoToken(), responseDto.getProvidername());
     }
 
     @Test
-    public void testExistEmail() throws NoSuchAlgorithmException {
+    public void testExistEmail() {
         // requestDto 으로 일단 기본 셋팅을 한다.
-        CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
-                .providername("test")
-                .password("test")
-                .rePassword("test")
-                .email("test@gmail.com")
-                .build();
-
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
-
-        String hashingPassword = Base64.getEncoder().encodeToString(hash);
-
         User existingProvider = User.builder()
-                .username(requestDto.getProvidername())
-                .email(requestDto.getEmail())
+                .username("ash")
+                .email("ash@gmail.com")
                 .build();
 
-        Mockito.when(userRepository.findByEmail(requestDto.getEmail())).thenReturn(Optional.of(existingProvider));
+        Mockito.when(userRepository.findByEmail(existingProvider.getEmail())).thenReturn(Optional.of(existingProvider));
         // 위에서 mock 객체를 생성했기 때문에, userRepository.findByEmail() 메소드를 호출하면
         // existingUser 객체를 리턴하도록 설정 한다.
 
         // then
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
             // when
-            providerService.registerProvider(requestDto);
+            providerService.registerProvider(existingProvider);
         });
         Assertions.assertEquals(DUPLICATE_EMAIL, exception.getMessage());
-    }
-
-    @Test
-    public void invalidPasswordAndRePassword() {
-        // given
-        CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
-                .providername("test")
-                .password("test")
-                .rePassword("t")
-                .email("test@gmail.com")
-                .build();
-
-        // then
-        Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            // when
-            providerService.registerProvider(requestDto);
-        });
-        Assertions.assertEquals(ProviderService.INVALID_PASSWORD, exception.getMessage());
     }
 
     @Test

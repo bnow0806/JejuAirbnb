@@ -46,9 +46,7 @@ public class ProviderLoginTest {
 
         // given
         CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
-                .providername("test")
-                .password("test")
-                .rePassword("test")
+                .username("test")
                 .email("test@gmail.com")
                 .build();
 
@@ -85,19 +83,12 @@ public class ProviderLoginTest {
         // given
         // 1. 회원 탈퇴한 객체 생성
         CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
-                .providername("test")
-                .password("test")
-                .rePassword("test")
+                .username("test")
                 .email("test@gmail.com")
                 .build();
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
-
-        String hashingPassword = Base64.getEncoder().encodeToString(hash);
-
         User existingProvider = User.builder()
-                .username(requestDto.getProvidername())
+                .username(requestDto.getUsername())
                 .email(requestDto.getEmail())
                 //.email("test2@gmail.com")
                 .build();
@@ -121,9 +112,7 @@ public class ProviderLoginTest {
         //unregisteredID 를 1로 만듬
         // given
         CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
-                .providername("test")
-                .password("test")
-                .rePassword("test")
+                .username("test")
                 .email("test@gmail.com")
                 .build();
 
@@ -156,9 +145,7 @@ public class ProviderLoginTest {
 
         //given
         CreateProviderRequestDto requestDto = CreateProviderRequestDto.builder()
-                .providername("test")
-                .password("test")
-                .rePassword("test")
+                .username("test")
                 .email("test@gmail.com")
                 .build();
 
@@ -201,7 +188,6 @@ public class ProviderLoginTest {
                 .email(requestDto.getEmail())
                 .build();
 
-        //HttpServletResponse
         HttpServletResponse response = mock(HttpServletResponse.class);
 
         Mockito.when(userRepository.findByEmail(requestDto.getEmail()))
