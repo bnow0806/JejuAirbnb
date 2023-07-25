@@ -3,14 +3,17 @@ package com.example.jejuairbnb.services;
 import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserRequestDto;
 import com.example.jejuairbnb.controller.UserControllerDto.CreateUserDto.CreateUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.FindUserDto.FindUserResponseDto;
+import com.example.jejuairbnb.controller.UserControllerDto.MyInfoUserDto.MyInfoUserResponseDto;
 import com.example.jejuairbnb.controller.UserControllerDto.UpdateUserDto.UpdateUserRequestDto;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IUserRepository;
 import com.example.jejuairbnb.shared.Enum.ProviderEnum;
+import com.example.jejuairbnb.shared.exception.HttpException;
 import com.example.jejuairbnb.shared.services.SecurityService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.webjars.NotFoundException;
@@ -37,12 +40,15 @@ public class UserService {
             CreateUserRequestDto requestDto,
             HttpServletResponse response
     ) {
-        System.out.println(requestDto);
         String kakaoToken = requestDto.getKakaoToken();
         Map<String, Object> responseKakaoData = socialLoginService.kakaoCallback(kakaoToken);
 
         if (responseKakaoData == null) {
-            throw new NotFoundException(DOES_NOT_FOUND_KAKAO_TOKEN);
+            throw new HttpException(
+                    false,
+                    DOES_NOT_FOUND_KAKAO_TOKEN,
+                    HttpStatus.NOT_FOUND
+            );
         }
 
         String kakaoAuthId = responseKakaoData.get("id").toString();
@@ -85,6 +91,16 @@ public class UserService {
                     .username(nickname)
                     .build();
         }
+    }
+
+    public MyInfoUserResponseDto getMyInfo(
+            User user
+    ) {
+        return new MyInfoUserResponseDto(
+                user.getEmail(),
+                user.getUsername()
+        );
+
     }
 
     @Transactional
