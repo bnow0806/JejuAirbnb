@@ -10,6 +10,7 @@ import com.example.jejuairbnb.repository.IUserRepository;
 import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.exception.HttpException;
 import com.example.jejuairbnb.shared.services.SecurityService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -50,15 +51,16 @@ public class UserService {
                     HttpStatus.NOT_FOUND
             );
         }
-
         String kakaoAuthId = responseKakaoData.get("id").toString();
+
+        Map<String,Object> kakaoAccount = (Map<String, Object>) responseKakaoData.get("kakao_account");
+        MyInfoUserResponseDto myInfoUserResponseDto = socialLoginService.findKakaUserData(kakaoAccount);
+
+        String email = myInfoUserResponseDto.getEmail();
+        String nickname = myInfoUserResponseDto.getUsername();
+
         User findUserByKakaoAuthId = userRepository.findByKakaoAuthId(kakaoAuthId)
                 .orElse(null);
-        Optional<Map<String, Object>> kakaoAccountOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("kakao_account"));
-        String email = kakaoAccountOptional.map(kakaoAccount -> kakaoAccount.get("email").toString()).orElse(null);
-
-        Optional<Map<String, Object>> propertiesOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("properties"));
-        String nickname = propertiesOptional.map(properties -> properties.get("nickname").toString()).orElse(null);
 
         if (findUserByKakaoAuthId == null) {
 //           회원가입을 시킨다.

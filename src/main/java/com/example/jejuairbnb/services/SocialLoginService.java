@@ -1,5 +1,6 @@
 package com.example.jejuairbnb.services;
 
+import com.example.jejuairbnb.controller.UserControllerDto.MyInfoUserDto.MyInfoUserResponseDto;
 import com.example.jejuairbnb.shared.exception.HttpException;
 import lombok.AllArgsConstructor;
 import org.springframework.http.*;
@@ -65,4 +66,19 @@ public class SocialLoginService {
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
-    }}
+    }
+
+    @Transactional
+    public MyInfoUserResponseDto findKakaUserData(
+            Map<String, Object> responseKakaoData
+    ) {
+        String email = responseKakaoData.get("email").toString();
+        Map<String, Object> profile = (Map<String, Object>) responseKakaoData.get("profile");
+        String nickname = profile.get("nickname").toString();
+
+        return new MyInfoUserResponseDto(
+                email,
+                nickname
+        );
+    }
+}
