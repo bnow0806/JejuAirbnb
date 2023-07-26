@@ -20,8 +20,7 @@ public class Product extends TimeStamped {
     private String name;
 
     @Column(name = "position")
-    @Enumerated(EnumType.STRING)
-    private PositionEnum position;
+    private String position;
 
     @Column(name = "description")
     private String description;
@@ -39,7 +38,7 @@ public class Product extends TimeStamped {
     public Product(
             String name,
             String description,
-            PositionEnum position,
+            String position,
             int price,
             String img,
             Long userId

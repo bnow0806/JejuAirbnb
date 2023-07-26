@@ -3,11 +3,17 @@ package com.example.jejuairbnb.services;
 import com.example.jejuairbnb.controller.ProductControllerDto.FindProductOneResponseDto;
 import com.example.jejuairbnb.controller.ProductControllerDto.FindProductResponseDto;
 import com.example.jejuairbnb.domain.Product;
+import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IProductRepository;
+import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.exception.HttpException;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import org.springframework.data.domain.Pageable;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -32,11 +38,46 @@ public class ProductService {
                 .build();
     }
 
-    public FindProductResponseDto findProduct() {
+    public FindProductResponseDto findProduct(
+            Pageable pageable
+    ) {
+        try {
+            Page<Product> productPage = productRepository.findAll(pageable);
 
-        return FindProductResponseDto
-                .builder()
-                .products(productRepository.findAll())
-                .build();
+            return FindProductResponseDto
+                    .builder()
+                    .products(productPage.getContent())
+                    .size(productPage.getSize())
+                    .totalPages(productPage.getTotalPages())
+                    .build();
+        } catch (Exception e) {
+            throw new HttpException(
+                    false,
+                    "에러가 발생했습니다.",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
+    public FindProductResponseDto findMyProductByUser(
+            User user,
+            Pageable pageable
+    ) {
+        if (user.getProvider() == ProviderEnum.FALSE) {
+            throw new HttpException(
+                    false,
+                    "PROVIDER 가 아닙니다.",
+                    HttpStatus.NOT_FOUND
+            );
+        }
+
+        Page<Product> productPage = productRepository.findByUserId(user.getId(), pageable);
+        List<Product> products = productPage.getContent();
+
+        return new FindProductResponseDto(
+                products,
+                products.size(),
+                productPage.getTotalPages()
+        );
     }
 }
