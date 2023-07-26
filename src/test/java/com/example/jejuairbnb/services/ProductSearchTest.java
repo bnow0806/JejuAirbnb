@@ -81,11 +81,10 @@ public class ProductSearchTest
 
         List<Product> mockProducts = Arrays.asList(mockProduct1, mockProduct3);
 
-        Mockito.when(productRepository.findByProduct_UserId(1L)).thenReturn(mockProducts);
+        Mockito.when(productRepository.findByUserId(1L)).thenReturn(mockProducts);
 
         // When
-        List<Product> products = productRepository.findByProduct_UserId(1L);
-        //System.out.println("(Debug) products "+products);
+        List<Product> products = productRepository.findByUserId(1L);
 
         // Then
         Assertions.assertEquals(2, products.size());

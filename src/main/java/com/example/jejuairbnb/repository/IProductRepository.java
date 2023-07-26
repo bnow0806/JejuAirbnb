@@ -14,10 +14,18 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findByName(String name);
 
-    List<Product> findByProduct_UserId(Long userId);
+    List<Product> findByUserId(Long userId);
 
     @Query(value = "select product " +
             "from Product product " +
             "where product.price <= :price")
     List<Product> findByKeywordPrice(@Param("price") Long price);
+
+    @Override
+    List<Product> findAll();
+
+    @Query(value = "select product " +
+            "from Product product " +
+            "where product.id between :firstNum and :lastNum")
+    List<Product> findByPageNumber(@Param("firstNum") Long firstNum, @Param("lastNum") Long lastNum);
 }
