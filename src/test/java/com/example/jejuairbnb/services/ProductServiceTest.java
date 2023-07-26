@@ -9,6 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -63,14 +67,38 @@ public class ProductServiceTest {
         mockProduct2.setImg("Test image 2");
         mockProduct2.setPrice(200);
 
-        List<Product> mockProducts = Arrays.asList(mockProduct1, mockProduct2);
-        Mockito.when(productRepository.findAll()).thenReturn(mockProducts);
+        Product mockProduct3 = new Product();
+        mockProduct2.setId(3L);
+        mockProduct2.setName("Test product 3");
+        mockProduct2.setImg("Test image 3");
+        mockProduct2.setPrice(300);
+
+        Product mockProduct4 = new Product();
+        mockProduct2.setId(4L);
+        mockProduct2.setName("Test product 4");
+        mockProduct2.setImg("Test image 4");
+        mockProduct2.setPrice(400);
+
+        int page = 1;
+        int size = 2;
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        List<Product> mockProducts = Arrays.asList(
+                mockProduct1,
+                mockProduct2,
+                mockProduct3,
+                mockProduct4
+        );
+        Page<Product> productPage = new PageImpl<>(mockProducts);
+        Mockito.when(productRepository.findAll(pageable)).thenReturn(productPage);
 
         // When
-        List<Product> products = productRepository.findAll();
+        Page<Product> resultPage = productRepository.findAll(pageable);
+        List<Product> products = resultPage.getContent();
 
+        System.out.println("products:"+products);
         // Then
-        Assertions.assertEquals(2, products.size());
+        Assertions.assertEquals(4, products.size());
         Assertions.assertEquals(mockProduct1, products.get(0));
         Assertions.assertEquals(mockProduct2, products.get(1));
     }
