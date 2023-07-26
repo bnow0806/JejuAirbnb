@@ -6,11 +6,13 @@ import com.example.jejuairbnb.services.ProductService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -22,11 +24,13 @@ public class ProductController {
 
     @GetMapping()
     public FindProductResponseDto getProducts(
-            @PageableDefault(
-                    size = 10,
-                    sort = "id",
-                    direction = Sort.Direction.DESC) Pageable pageable
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size
     ) {
+        if (page < 1) {
+            page = 1;
+        }
+        Pageable pageable = PageRequest.of(page - 1, size);
         return productService.findProduct(pageable);
     }
 

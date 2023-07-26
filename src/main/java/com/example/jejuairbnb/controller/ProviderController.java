@@ -6,10 +6,8 @@ import com.example.jejuairbnb.services.ProductService;
 import com.example.jejuairbnb.shared.services.SecurityService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Pageable;
 
@@ -24,9 +22,11 @@ public class ProviderController {
     @GetMapping("/my_provider_info")
     public FindProductResponseDto getMyInfo(
             @CookieValue("access-token") String accessToken,
-            Pageable pageable
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size
     ) {
         User findUser = securityService.getSubject(accessToken);
+        Pageable pageable = PageRequest.of(page, size);
         return productService.findMyProductByUser(
                 findUser,
 				pageable
