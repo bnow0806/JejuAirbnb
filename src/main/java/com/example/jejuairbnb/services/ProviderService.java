@@ -127,9 +127,6 @@ public class ProviderService {
     ){
         try {
             //SHA-256 으로 PW 검증
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
-
             User findUser = userRepository.findByEmail(requestDto.getEmail())
                     .orElseThrow(() -> new HttpException(
                             false,
@@ -152,7 +149,11 @@ public class ProviderService {
             return responseDto;
 
         } catch (Exception e) {
-            throw new RuntimeException("bad request");
+            throw new HttpException(
+                    false,
+                    "bad request",
+                    HttpStatus.BAD_REQUEST
+            );
         }
     }
 }

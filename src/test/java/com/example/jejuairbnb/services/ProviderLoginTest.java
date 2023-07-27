@@ -6,20 +6,18 @@ import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IUserRepository;
 import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.services.SecurityService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,14 +28,24 @@ import static org.mockito.Mockito.mock;
 @SpringBootTest
 public class ProviderLoginTest {
 
-    @MockBean // 스프링 부트 테스트에서 사용하는 목(mock) 객체를 생성하는 어노테이션입니다
+
+    @Mock
     private IUserRepository userRepository;
+
+    @Mock
     private SecurityService securityService;
+
+    @InjectMocks
     private ProviderService providerService;
+    private SocialLoginService socialLoginService;
 
     @BeforeEach // 각 테스트 메소드 실행 전에 호출되는 메소드를 지정
     public void setup() {
-        securityService = new SecurityService(userRepository);
+        providerService = new ProviderService(
+                userRepository,
+                socialLoginService,
+                securityService
+        );
     }
 
     @Test
@@ -67,7 +75,7 @@ public class ProviderLoginTest {
     }
 
     @Test
-    public void testResignedProvider() throws NoSuchAlgorithmException{
+    public void testResignedProvider() {
 
         // Test Scenario
         // 1. 회원 탈퇴한 객체 생성
@@ -77,8 +85,8 @@ public class ProviderLoginTest {
 
         // given
         // 1. 회원 탈퇴한 객체 생성
-        String email = "";
-        String username = "";
+        String email = "ash@gmail.com";
+        String username = "ash";
 
         User existingProvider = User.builder()
                 .username(username)
@@ -99,28 +107,25 @@ public class ProviderLoginTest {
     }
 
     @Test
-    public void testResignProvider() throws NoSuchAlgorithmException{
-        //id, pw 입력하여 객체를 찾음
-        //unregisteredID 를 1로 만듬
+    public void testResignProvider() {
         // given
-
-        String email = "ash";
-        String username = "ash@gmail.com";
-
         Long providerId = 1L;
         User provider = User.builder()
                 .username("testtest")
                 .email("test@gmail.com")
+                .provider(ProviderEnum.FALSE)  // provider 필드를 FALSE로 설정
                 .build();
 
-        provider.setId(providerId); //Added for test //AutoEncrementation
+        provider.setId(providerId); // AutoIncrementation
 
-        Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.of(provider));
+        Mockito.when(userRepository.findByEmail(provider.getEmail())).thenReturn(Optional.of(provider));
         Mockito.when(userRepository.save(any(User.class))).then(AdditionalAnswers.returnsFirstArg());
 
         // when
-        User findProvider = userRepository.findByEmail(email).orElse(null);
+        User findProvider = userRepository.findByEmail(provider.getEmail()).orElse(null);
+        assert findProvider != null;
 
+        findProvider.setProvider(ProviderEnum.TRUE);  // 조건문 바깥으로 이동
         User savedProvider = userRepository.save(findProvider);
 
         // then
@@ -159,44 +164,33 @@ public class ProviderLoginTest {
     }
 
     @Test
-    public void testLogin() throws NoSuchAlgorithmException{
-        //로그인 서비스를 실행해본다.
-
+    public void testLoginProvider() {
         // given
-        LoginProviderRequestDto requestDto = LoginProviderRequestDto.builder()
-                .password("test")
-                .email("test@gmail.com")
-                .build();
-
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
-
-        String hashingPassword = Base64.getEncoder().encodeToString(hash);
-
-        User existingProvider = User.builder()
-                .username("test")
-                .email(requestDto.getEmail())
-                .build();
+        LoginProviderRequestDto requestDto = new LoginProviderRequestDto(
+                "test",
+                "test@gmail.com"
+        );
+        User existingUser = new User();
+        existingUser.setEmail(requestDto.getEmail());
+        String fakeToken = "fakeToken";
 
         HttpServletResponse response = mock(HttpServletResponse.class);
 
+        // setting expected behavior
         Mockito.when(userRepository.findByEmail(requestDto.getEmail()))
-                .thenReturn(Optional.of(existingProvider));
+                .thenReturn(Optional.of(existingUser));
 
+        Mockito.when(securityService.createToken(requestDto.getEmail()))
+                .thenReturn(fakeToken);
         // when
-        LoginResponseDto loginProviderResponseDto = providerService.loginProvider(requestDto, response);
+        LoginResponseDto loginResponseDto = providerService.loginProvider(requestDto, response);
 
         // then
-        Assertions.assertNotNull(loginProviderResponseDto);
-        Assertions.assertEquals(requestDto.getEmail(), loginProviderResponseDto.getEmail());
-        Assertions.assertNotNull(loginProviderResponseDto.getToken());
-        // 3. unregistedID 인지 확인
-        // then
-        User findProvider = userRepository.findByEmail(requestDto.getEmail()).orElse(null);
-        ProviderEnum providerEnum = Objects.requireNonNull(findProvider).getProvider();
-        Assertions.assertEquals(ProviderEnum.TRUE, providerEnum);
+        Assertions.assertNotNull(loginResponseDto);
+        Assertions.assertEquals(requestDto.getEmail(), loginResponseDto.getEmail());
+        Assertions.assertEquals(fakeToken, loginResponseDto.getToken());
+        Mockito.verify(response).addCookie(any(Cookie.class));
     }
-
 
     @Test
     public void testJwtTokenProvider() throws NoSuchAlgorithmException{
