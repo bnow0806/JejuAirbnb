@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 @Service
 @AllArgsConstructor
 public class AdminCommentService {
@@ -23,7 +24,13 @@ public class AdminCommentService {
             User user,
             CreateCommentRequestDto requestDto
     ) {
-
+        if (requestDto.getDescription() == null) {
+            throw new HttpException(
+                    false,
+                    "description 이 비어있습니다.",
+                    HttpStatus.NOT_FOUND
+            );
+        }
         if (requestDto.getDescription().length() > 1000) {
             throw new HttpException(
                     false,
@@ -62,7 +69,7 @@ public class AdminCommentService {
                 )
         );
 
-        if (user.getId() == findComment.getUserId()){
+        if (user.getId() != findComment.getUserId()){
             throw new HttpException(
                     false,
                     "댓글 작성자 가 아닙니다.",
