@@ -50,7 +50,7 @@ public class AdminCommentService {
         commentRepository.save(newComment);
         return new CoreSuccessResponse(
                 true,
-                "상품이 등록되었습니다.",
+                "댓글이 등록되었습니다.",
                 201
         );
     }
@@ -85,7 +85,7 @@ public class AdminCommentService {
 
         return new CoreSuccessResponse(
                 true,
-                "상품이 수정되었습니다.",
+                "댓글이 수정되었습니다.",
                 200
         );
     }
