@@ -72,7 +72,7 @@ public class AdminCommentService {
         if (user.getId() != findComment.getUserId()){
             throw new HttpException(
                     false,
-                    "댓글 작성자 가 아닙니다.",
+                    "댓글 작성자가 아닙니다.",
                     HttpStatus.NOT_FOUND
             );
         }
