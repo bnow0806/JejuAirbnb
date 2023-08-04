@@ -136,7 +136,7 @@ public class ProviderServiceTest {
                 .build();
         users.setId(providerId); //Added for test //AutoEncrementation
 
-        //Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        Mockito.when(userRepository.findByEmail(users.getEmail())).thenReturn(Optional.of(users));
         Mockito.when(userRepository.save(any(User.class))).then(AdditionalAnswers.returnsFirstArg());   //Added for test
 
         // when
