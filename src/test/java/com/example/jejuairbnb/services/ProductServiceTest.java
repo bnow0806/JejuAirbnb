@@ -75,8 +75,4 @@ public class ProductServiceTest {
         Assertions.assertEquals(mockProduct2, products.get(1));
     }
 
-    @Test
-    public void testReadCommentFromProduct(){
-
-    }
 }

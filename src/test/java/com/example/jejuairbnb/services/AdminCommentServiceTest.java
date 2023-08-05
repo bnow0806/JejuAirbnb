@@ -3,13 +3,17 @@ package com.example.jejuairbnb.services;
 import com.example.jejuairbnb.adminController.AdminCommentDto.CreateCommentDto.CreateCommentRequestDto;
 import com.example.jejuairbnb.adminController.AdminCommentDto.UpdateCommentDto.UpdateCommentRequestDto;
 import com.example.jejuairbnb.adminServices.AdminCommentService;
+import com.example.jejuairbnb.controller.ProductControllerDto.FindProductOneResponseDto;
 import com.example.jejuairbnb.domain.Comment;
+import com.example.jejuairbnb.domain.Product;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.ICommentRepository;
+import com.example.jejuairbnb.repository.IProductRepository;
 import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.exception.HttpException;
 import com.example.jejuairbnb.shared.response.CoreSuccessResponse;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
@@ -34,6 +38,13 @@ public class AdminCommentServiceTest {
     @Autowired
     private CommentService commentService;
 
+    @MockBean
+    private IProductRepository productRepository;
+
+    @Autowired
+    private ProductService productService;
+
+
     @Test
     public void testCreateComment() {
         // 주어진 User와 CreateCommentRequestDto 객체 생성
@@ -54,10 +65,6 @@ public class AdminCommentServiceTest {
         Assertions.assertEquals(response.getMessage(), "댓글이 등록되었습니다.");
         Assertions.assertEquals(response.getStatusCode(), 201);
         Assertions.assertTrue(response.isOk());
-    }
-
-    @Test
-    public void testEnrollCommentToProduct() {
     }
 
     @Test
@@ -183,7 +190,98 @@ public class AdminCommentServiceTest {
     }
 
     @Test
+    public void testEnrollCommentToProduct() {
+        //@OneToMany 관계에서 insert 하기
+        //given
+        Product mockProduct1 = new Product();
+        mockProduct1.setId(1L);
+        mockProduct1.setName("Test product 1");
+        mockProduct1.setImg("Test image 1");
+        mockProduct1.setPrice(100);
+
+        Comment mockComment1 = new Comment();
+        mockComment1.setId(1L);
+        mockComment1.setRating(3.51f);
+        mockComment1.setDescription("Test Descript1");
+        mockComment1.setImg("Test image1");
+        mockComment1.setUserId(1L);
+
+        Comment mockComment2 = new Comment();
+        mockComment2.setId(2L);
+        mockComment2.setRating(3.52f);
+        mockComment2.setDescription("Test Descript2");
+        mockComment2.setImg("Test image2");
+        mockComment2.setUserId(1L);
+
+        mockProduct1.getComment().add(mockComment1);
+        mockProduct1.getComment().add(mockComment2);
+        mockComment1.setProduct(mockProduct1);
+        mockComment2.setProduct(mockProduct1);
+
+        Mockito.when(productRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(mockProduct1));
+
+        // When
+        Product findProduct = productRepository.findById(1L).get();
+
+        // then
+        Assertions.assertEquals(findProduct.getComment().size(),2);
+        Assertions.assertEquals(findProduct.getComment().get(0),mockComment1);
+        Assertions.assertEquals(findProduct.getComment().get(1),mockComment2);
+        Assertions.assertEquals(findProduct.getComment().get(0).getProduct(),mockProduct1);
+    }
+
+    @Test
     public void testDeleteCommentFromProduct() {
+        //@OneToMany 관계에서 delete 하기
+        //given
+        Product mockProduct1 = new Product();
+        mockProduct1.setId(1L);
+        mockProduct1.setName("Test product 1");
+        mockProduct1.setImg("Test image 1");
+        mockProduct1.setPrice(100);
+
+        Comment mockComment1 = new Comment();
+        mockComment1.setId(1L);
+        mockComment1.setRating(3.51f);
+        mockComment1.setDescription("Test Descript1");
+        mockComment1.setImg("Test image1");
+        mockComment1.setUserId(1L);
+
+        Comment mockComment2 = new Comment();
+        mockComment2.setId(2L);
+        mockComment2.setRating(3.52f);
+        mockComment2.setDescription("Test Descript2");
+        mockComment2.setImg("Test image2");
+        mockComment2.setUserId(1L);
+
+        mockProduct1.getComment().add(mockComment1);
+        mockProduct1.getComment().add(mockComment2);
+        mockComment1.setProduct(mockProduct1);
+        mockComment2.setProduct(mockProduct1);
+
+        Mockito.when(productRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(mockProduct1));
+
+        // when //id, user
+        Product findProduct = productRepository.findById(1L).get();
+        List<Comment> comments = findProduct.getComment();
+
+        // TODO : fincProduct 내의 comments 중 어느 것을 지울 지에대한 기준 필요
+//        for (Comment commentTemp : comments){
+//            if(commentTemp.getId()==1L) {
+//                comments.remove(commentTemp);
+//            }
+//        }
+
+        comments.remove(mockComment1);
+        System.out.println("findProduct.getComment().size() :"+findProduct.getComment().size());
+        if(comments.size()==0){
+            findProduct.setComment(null);
+        }
+
+        // then
+        Assertions.assertEquals(findProduct.getComment().size(),1);
+        Assertions.assertEquals(findProduct.getComment().get(0),mockComment2);
+        Assertions.assertNotNull(findProduct.getComment());
     }
 
 }
