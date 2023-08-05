@@ -18,6 +18,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -184,11 +186,4 @@ public class AdminCommentServiceTest {
     public void testDeleteCommentFromProduct() {
     }
 
-    @Test
-    public void testFindCommentbyDescription() {
-    }
-
-    @Test
-    public void testReadCommentbyPagenationAndDescription() {
-    }
 }

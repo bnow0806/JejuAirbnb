@@ -74,4 +74,9 @@ public class ProductServiceTest {
         Assertions.assertEquals(mockProduct1, products.get(0));
         Assertions.assertEquals(mockProduct2, products.get(1));
     }
+
+    @Test
+    public void testReadCommentFromProduct(){
+
+    }
 }
