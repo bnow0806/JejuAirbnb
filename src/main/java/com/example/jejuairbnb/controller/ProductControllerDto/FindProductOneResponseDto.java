@@ -1,5 +1,6 @@
 package com.example.jejuairbnb.controller.ProductControllerDto;
 
+import com.example.jejuairbnb.domain.Comment;
 import lombok.Builder;
 import lombok.Data;
 

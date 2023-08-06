@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -29,16 +30,23 @@ public class Comment extends TimeStamped {
     @Column(name = "user_id")
     private Long userId;
 
+    @ManyToOne
+    @ToString.Exclude
+    @JoinColumn(name = "product_id")
+    private Product product;
+
     @Builder
     public Comment(
             Float rating,
             String description,
             String img,
-            Long userId
+            Long userId,
+            Product product
     ) {
         this.rating = rating;
         this.description = description;
         this.img = img;
         this.userId = userId;
+        this.product = product;
     }
 }

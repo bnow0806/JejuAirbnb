@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Entity
 @NoArgsConstructor
@@ -33,6 +36,9 @@ public class Product extends TimeStamped {
 
     @Column(name = "user_id")
     private Long userId;
+
+    @OneToMany(mappedBy = "product", fetch=FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<Comment> comment = new ArrayList<>();
 
     @Builder
     public Product(
