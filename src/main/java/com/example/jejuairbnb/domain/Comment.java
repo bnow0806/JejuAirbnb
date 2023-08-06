@@ -2,15 +2,14 @@ package com.example.jejuairbnb.domain;
 
 import com.example.jejuairbnb.shared.domain.TimeStamped;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Data
 @Entity
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "comments")
 public class Comment extends TimeStamped {
@@ -34,19 +33,4 @@ public class Comment extends TimeStamped {
     @ToString.Exclude
     @JoinColumn(name = "product_id")
     private Product product;
-
-    @Builder
-    public Comment(
-            Float rating,
-            String description,
-            String img,
-            Long userId,
-            Product product
-    ) {
-        this.rating = rating;
-        this.description = description;
-        this.img = img;
-        this.userId = userId;
-        this.product = product;
-    }
 }

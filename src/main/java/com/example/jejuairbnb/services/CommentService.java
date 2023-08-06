@@ -1,11 +1,13 @@
 package com.example.jejuairbnb.services;
 
+import com.example.jejuairbnb.adminController.AdminCommentDto.CreateCommentDto.CreateCommentRequestDto;
 import com.example.jejuairbnb.controller.CommentControllerDto.FindCommentOneResponseDto;
 import com.example.jejuairbnb.controller.CommentControllerDto.FindCommentResponseDto;
 import com.example.jejuairbnb.domain.Comment;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.ICommentRepository;
 import com.example.jejuairbnb.shared.exception.HttpException;
+import com.example.jejuairbnb.shared.response.CoreSuccessResponseWithData;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +21,36 @@ import java.util.List;
 public class CommentService {
 
     private final ICommentRepository commentRepository;
+
+    public CoreSuccessResponseWithData createComment(
+            User user,
+            CreateCommentRequestDto requestDto
+    ) {
+        try {
+            Comment comment = Comment
+                    .builder()
+                    .rating(requestDto.getRating())
+                    .description(requestDto.getDescription())
+                    .img(requestDto.getImg())
+                    .userId(user.getId())
+                    .build();
+
+            commentRepository.save(comment);
+
+            return new CoreSuccessResponseWithData(
+                    true,
+                    "댓글이 성공적으로 등록되었습니다.",
+                    201,
+                    comment
+            );
+        } catch (Exception e) {
+            throw new HttpException(
+                    false,
+                    "에러가 발생했습니다.",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+    }
 
     public FindCommentOneResponseDto findCommentOneById(
             Long id
