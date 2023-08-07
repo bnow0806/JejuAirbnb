@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -39,6 +40,7 @@ public class ProductService {
         findProduct.setCommentCount(commentCount);
 
         List<Comment> comments = commentRepository.findByProductId(id);
+        List<Comment> commentDtos = toDtoList(comments);
 
 		return FindProductOneResponseDto
                 .builder()
@@ -46,7 +48,7 @@ public class ProductService {
                 .description(findProduct.getDescription())
                 .price(findProduct.getPrice())
                 .img(findProduct.getImg())
-                .comments(comments)
+                .comments(commentDtos)
                 .build();
     }
 
@@ -96,5 +98,18 @@ public class ProductService {
                 products.size(),
                 productPage.getTotalPages()
         );
+    }
+
+    public List<Comment> toDtoList(List<Comment> comments) {
+        return comments.stream()
+                .map(comment -> {
+                    Comment dto = new Comment();
+                    dto.setId(comment.getId());
+                    dto.setRating(comment.getRating());
+                    dto.setDescription(comment.getDescription());
+                    dto.setImg(comment.getImg());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }
