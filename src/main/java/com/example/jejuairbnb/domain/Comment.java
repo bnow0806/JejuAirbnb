@@ -1,6 +1,7 @@
 package com.example.jejuairbnb.domain;
 
 import com.example.jejuairbnb.shared.domain.TimeStamped;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +19,7 @@ public class Comment extends TimeStamped {
     private long id;
 
     @Column(name = "rating")
-    private Float rating;
+    private Float rating = 0.0f;
 
     @Column(name = "description")
     private String description;
@@ -26,11 +27,14 @@ public class Comment extends TimeStamped {
     @Column(name = "img")
     private String img;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY) // LAZY 로딩으로 변경
+    @ToString.Exclude
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
     @JoinColumn(name = "product_id")
+    @JsonIgnore
     private Product product;
 }

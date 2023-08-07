@@ -32,7 +32,7 @@ public class CommentService {
                     .rating(requestDto.getRating())
                     .description(requestDto.getDescription())
                     .img(requestDto.getImg())
-                    .userId(user.getId())
+                    .user(user)
                     .build();
 
             commentRepository.save(comment);

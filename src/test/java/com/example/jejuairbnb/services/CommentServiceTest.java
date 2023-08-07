@@ -2,7 +2,9 @@ package com.example.jejuairbnb.services;
 
 import com.example.jejuairbnb.controller.CommentControllerDto.FindCommentOneResponseDto;
 import com.example.jejuairbnb.domain.Comment;
+import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.ICommentRepository;
+import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,19 +38,25 @@ public class CommentServiceTest {
     @Test
     public void testFindOneCommentById() {
         //given
-        Long id = 1L;
+        long userId = 1L;
+
+        User mockUser = new User();
+        mockUser.setId(userId);
+        mockUser.setUsername("Test user");
+        mockUser.setEmail("Test email");
+        mockUser.setProvider(ProviderEnum.FALSE);
 
         Comment mockComment = new Comment();
         mockComment.setId(1L);
         mockComment.setRating(3.5f);
         mockComment.setDescription("Test Descript");
         mockComment.setImg("Test image");
-        mockComment.setUserId(1L);
+        mockComment.setUser(mockUser);
 
         Mockito.when(commentRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(mockComment));
 
         // 실행
-        FindCommentOneResponseDto response = commentService.findCommentOneById(id);
+        FindCommentOneResponseDto response = commentService.findCommentOneById(userId);
 
         // 검증
         Assertions.assertEquals(response.getRating(), 3.5f);
@@ -59,35 +67,44 @@ public class CommentServiceTest {
     @Test
     public void testFindCommentbyDescription() {
         //given
+        Long userId = 1L;
+
+        User mockUser = new User();
+        mockUser.setId(userId);
+        mockUser.setUsername("Test user");
+        mockUser.setEmail("Test email");
+        mockUser.setProvider(ProviderEnum.FALSE);
+
         Comment mockComment1 = new Comment();
         mockComment1.setId(1L);
         mockComment1.setRating(3.51f);
         mockComment1.setDescription("Test Descript1");
         mockComment1.setImg("Test image1");
-        mockComment1.setUserId(1L);
+        mockComment1.setUser(mockUser);
 
         Comment mockComment2 = new Comment();
         mockComment2.setId(2L);
         mockComment2.setRating(3.52f);
         mockComment2.setDescription("Test Descript2");
         mockComment2.setImg("Test image2");
-        mockComment2.setUserId(1L);
+        mockComment2.setUser(mockUser);
 
         Comment mockComment3 = new Comment();
         mockComment3.setId(3L);
         mockComment3.setRating(3.53f);
         mockComment3.setDescription("Test Descript3");
         mockComment3.setImg("Test image3");
-        mockComment3.setUserId(1L);
+        mockComment3.setUser(mockUser);
 
-        List<Comment> mockComments = Arrays.asList(mockComment1);
+        List<Comment> mockComments = List.of(mockComment1);
 
         String testDescription = "Descript1";
+        Pageable pageable = PageRequest.of(0, 10);
 
-        Mockito.when(commentRepository.findByDescriptionContaining(testDescription)).thenReturn(mockComments);
+        Mockito.when(commentRepository.findByDescriptionContaining(testDescription, pageable)).thenReturn((Page<Comment>) mockComments);
 
         //when
-        List<Comment> comments = commentRepository.findByDescriptionContaining(testDescription);
+        List<Comment> comments = (commentRepository.findByDescriptionContaining(testDescription, pageable)).getContent();
 
         //then
         Assertions.assertEquals(1, comments.size());
@@ -97,33 +114,41 @@ public class CommentServiceTest {
     @Test
     public void testReadCommentbyDescriptionAndPagenation() {
         //given
+        long userId = 1L;
+
+        User mockUser = new User();
+        mockUser.setId(userId);
+        mockUser.setUsername("Test user");
+        mockUser.setEmail("Test email");
+        mockUser.setProvider(ProviderEnum.FALSE);
+
         Comment mockComment1 = new Comment();
         mockComment1.setId(1L);
         mockComment1.setRating(3.51f);
         mockComment1.setDescription("Test Descript1");
         mockComment1.setImg("Test image1");
-        mockComment1.setUserId(1L);
+        mockComment1.setUser(mockUser);
 
         Comment mockComment2 = new Comment();
         mockComment2.setId(2L);
         mockComment2.setRating(3.52f);
         mockComment2.setDescription("Test Descript2");
         mockComment2.setImg("Test image2");
-        mockComment2.setUserId(1L);
+        mockComment2.setUser(mockUser);
 
         Comment mockComment3 = new Comment();
         mockComment3.setId(3L);
         mockComment3.setRating(3.52f);
         mockComment3.setDescription("Descript3");
         mockComment3.setImg("Test image3");
-        mockComment3.setUserId(1L);
+        mockComment3.setUser(mockUser);
 
         Comment mockComment4 = new Comment();
         mockComment4.setId(4L);
         mockComment4.setRating(3.54f);
         mockComment4.setDescription("Descript4");
         mockComment4.setImg("image4");
-        mockComment4.setUserId(1L);
+        mockComment4.setUser(mockUser);
 
         String testDescription = "Test";
         int page = 1;       //page 가변

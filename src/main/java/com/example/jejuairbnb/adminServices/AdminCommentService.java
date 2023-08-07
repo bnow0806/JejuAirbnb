@@ -44,7 +44,7 @@ public class AdminCommentService {
                 .rating(requestDto.getRating())
                 .description(requestDto.getDescription())
                 .img(requestDto.getImg())
-                .userId(user.getId())
+                .user(user)
                 .build();
 
         commentRepository.save(newComment);
@@ -69,7 +69,7 @@ public class AdminCommentService {
                 )
         );
 
-        if (user.getId() != findComment.getUserId()){
+        if (user.getId() != findComment.getUser().getId()){
             throw new HttpException(
                     false,
                     "댓글 작성자가 아닙니다.",
@@ -80,7 +80,7 @@ public class AdminCommentService {
         findComment.setRating(updateCommentRequestDto.getRating());
         findComment.setDescription(updateCommentRequestDto.getDescription());
         findComment.setImg(updateCommentRequestDto.getImg());
-        findComment.setUserId(user.getId());
+        findComment.setUser(user);
         commentRepository.save(findComment);
 
         return new CoreSuccessResponse(
@@ -104,7 +104,7 @@ public class AdminCommentService {
                         )
                 );
 
-        if (findComment.getUserId() != user.getId()) {
+        if (findComment.getUser().getId() != user.getId()) {
             throw new HttpException(
                     false,
                     "해당 댓글의 작성자가 아닙니다.",

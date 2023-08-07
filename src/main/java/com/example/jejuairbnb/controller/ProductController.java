@@ -3,6 +3,7 @@ package com.example.jejuairbnb.controller;
 import com.example.jejuairbnb.controller.ProductControllerDto.FindProductOneResponseDto;
 import com.example.jejuairbnb.controller.ProductControllerDto.FindProductResponseDto;
 import com.example.jejuairbnb.services.ProductService;
+import com.example.jejuairbnb.shared.response.CoreSuccessResponseWithData;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -21,7 +22,7 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping()
-    public FindProductResponseDto getProducts(
+    public CoreSuccessResponseWithData getProducts(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size
     ) {
