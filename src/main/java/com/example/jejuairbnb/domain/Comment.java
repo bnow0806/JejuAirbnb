@@ -1,6 +1,7 @@
 package com.example.jejuairbnb.domain;
 
 import com.example.jejuairbnb.shared.domain.TimeStamped;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,5 +35,6 @@ public class Comment extends TimeStamped {
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
     @JoinColumn(name = "product_id")
+    @JsonIgnore
     private Product product;
 }

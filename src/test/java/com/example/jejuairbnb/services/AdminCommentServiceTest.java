@@ -97,9 +97,13 @@ public class AdminCommentServiceTest {
         // given
         Long id = 1L;   //comment id
 
-        User user = new User();
-        user.setProvider(ProviderEnum.FALSE);
-        user.setId(1L);
+        Long userId = 1L;
+        User mockUser = new User();
+        mockUser.setId(userId);
+        mockUser.setUsername("testUser");
+        mockUser.setEmail("test@kakao.com");
+        mockUser.setKakaoAuthId("123151223");
+        mockUser.setProvider(ProviderEnum.FALSE);
         //user.setId(2L);
 
         UpdateCommentRequestDto requestDto = new UpdateCommentRequestDto();
@@ -112,12 +116,12 @@ public class AdminCommentServiceTest {
         mockComment.setRating(3.5f);
         mockComment.setDescription("Test Descript");
         mockComment.setImg("Test image");
-        mockComment.setUserId(1L);
+        mockComment.setUser(mockUser);
 
         Mockito.when(commentRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(mockComment));
 
         // when
-        CoreSuccessResponse response = adminCommentService.updateComment(id, user, requestDto);
+        CoreSuccessResponse response = adminCommentService.updateComment(id, mockUser, requestDto);
 
         // then
         Assertions.assertEquals(response.getMessage(), "댓글이 수정되었습니다.");
@@ -128,13 +132,21 @@ public class AdminCommentServiceTest {
     @Test
     public void testUpdateCommentUpdatedAt() {
         //given
+        Long userId = 1L;
+        User mockUser = new User();
+        mockUser.setId(userId);
+        mockUser.setUsername("testUser");
+        mockUser.setEmail("test@kakao.com");
+        mockUser.setKakaoAuthId("123151223");
+        mockUser.setProvider(ProviderEnum.FALSE);
+
         Long commentId = 1L;
         Comment mockComment = new Comment();
         mockComment.setId(1L);
         mockComment.setRating(3.5f);
         mockComment.setDescription("Test Descript");
         mockComment.setImg("Test image");
-        mockComment.setUserId(1L);
+        mockComment.setUser(mockUser);
         mockComment.setUpdatedAt(LocalDateTime.now());
 
         Mockito.when(commentRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(mockComment));
@@ -176,7 +188,7 @@ public class AdminCommentServiceTest {
         mockComment.setRating(3.5f);
         mockComment.setDescription("Test Descript");
         mockComment.setImg("Test image");
-        mockComment.setUserId(1L);
+        mockComment.setUser(user);
 
         Mockito.when(commentRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(mockComment));
 
@@ -193,6 +205,10 @@ public class AdminCommentServiceTest {
     public void testEnrollCommentToProduct() {
         //@OneToMany 관계에서 insert 하기
         //given
+        User user = new User();
+        user.setProvider(ProviderEnum.FALSE);
+        user.setId(1L);
+
         Product mockProduct1 = new Product();
         mockProduct1.setId(1L);
         mockProduct1.setName("Test product 1");
@@ -204,14 +220,14 @@ public class AdminCommentServiceTest {
         mockComment1.setRating(3.51f);
         mockComment1.setDescription("Test Descript1");
         mockComment1.setImg("Test image1");
-        mockComment1.setUserId(1L);
+        mockComment1.setUser(user);
 
         Comment mockComment2 = new Comment();
         mockComment2.setId(2L);
         mockComment2.setRating(3.52f);
         mockComment2.setDescription("Test Descript2");
         mockComment2.setImg("Test image2");
-        mockComment2.setUserId(1L);
+        mockComment2.setUser(user);
 
         mockProduct1.getComment().add(mockComment1);
         mockProduct1.getComment().add(mockComment2);
@@ -234,6 +250,10 @@ public class AdminCommentServiceTest {
     public void testDeleteCommentFromProduct() {
         //@OneToMany 관계에서 delete 하기
         //given
+        User user = new User();
+        user.setProvider(ProviderEnum.FALSE);
+        user.setId(1L);
+
         Product mockProduct1 = new Product();
         mockProduct1.setId(1L);
         mockProduct1.setName("Test product 1");
@@ -245,14 +265,14 @@ public class AdminCommentServiceTest {
         mockComment1.setRating(3.51f);
         mockComment1.setDescription("Test Descript1");
         mockComment1.setImg("Test image1");
-        mockComment1.setUserId(1L);
+        mockComment1.setUser(user);
 
         Comment mockComment2 = new Comment();
         mockComment2.setId(2L);
         mockComment2.setRating(3.52f);
         mockComment2.setDescription("Test Descript2");
         mockComment2.setImg("Test image2");
-        mockComment2.setUserId(1L);
+        mockComment2.setUser(user);
 
         mockProduct1.getComment().add(mockComment1);
         mockProduct1.getComment().add(mockComment2);
@@ -274,7 +294,7 @@ public class AdminCommentServiceTest {
 
         comments.remove(mockComment1);
         System.out.println("findProduct.getComment().size() :"+findProduct.getComment().size());
-        if(comments.size()==0){
+        if(comments.isEmpty()){
             findProduct.setComment(null);
         }
 

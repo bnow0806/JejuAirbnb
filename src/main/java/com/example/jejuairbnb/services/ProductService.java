@@ -2,6 +2,7 @@ package com.example.jejuairbnb.services;
 
 import com.example.jejuairbnb.controller.ProductControllerDto.FindProductOneResponseDto;
 import com.example.jejuairbnb.controller.ProductControllerDto.FindProductResponseDto;
+import com.example.jejuairbnb.controller.ProductControllerDto.ProductDto;
 import com.example.jejuairbnb.domain.Comment;
 import com.example.jejuairbnb.domain.Product;
 import com.example.jejuairbnb.domain.User;
@@ -9,6 +10,7 @@ import com.example.jejuairbnb.repository.ICommentRepository;
 import com.example.jejuairbnb.repository.IProductRepository;
 import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.exception.HttpException;
+import com.example.jejuairbnb.shared.response.CoreSuccessResponseWithData;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -52,23 +54,25 @@ public class ProductService {
                 .build();
     }
 
-    public FindProductResponseDto findProduct(
+    public CoreSuccessResponseWithData findProduct(
             Pageable pageable
     ) {
         try {
             Page<Product> productPage = productRepository.findAll(pageable);
-            // productPage 에 나온 product 들의 comment 수를 구한다.
-            for (Product product : productPage.getContent()) {
-                product.setCommentCount(commentRepository.countByProductId(product.getId()));
-                product.setCommentAvg(commentRepository.avgByProductId(product.getId()));
-            }
+            List<Product> products = productPage.getContent();
 
-            return FindProductResponseDto
-                    .builder()
-                    .products(productPage.getContent())
-                    .size(productPage.getSize())
-                    .totalPages(productPage.getTotalPages())
-                    .build();
+            FindProductResponseDto findProductResponseDto = new FindProductResponseDto(
+                    productDtos(products),
+                    productPage.getContent().size(),
+                    productPage.getTotalPages()
+            );
+
+            return new CoreSuccessResponseWithData(
+                    true,
+                    "상품 조회에 성공했습니다.",
+                    200,
+                    findProductResponseDto
+            );
         } catch (Exception e) {
             throw new HttpException(
                     false,
@@ -92,9 +96,8 @@ public class ProductService {
 
         Page<Product> productPage = productRepository.findByUserId(user.getId(), pageable);
         List<Product> products = productPage.getContent();
-
         return new FindProductResponseDto(
-                products,
+                productDtos(products),
                 products.size(),
                 productPage.getTotalPages()
         );
@@ -108,8 +111,26 @@ public class ProductService {
                     dto.setRating(comment.getRating());
                     dto.setDescription(comment.getDescription());
                     dto.setImg(comment.getImg());
+                    dto.setCreatedAt(comment.getCreatedAt());
+                    dto.setUpdatedAt(comment.getUpdatedAt());
+                    dto.setDeletedAt(comment.getDeletedAt());
                     return dto;
                 })
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductDto> productDtos(
+            List<Product> products
+    ) {
+        return products.stream()
+                .map(product -> new ProductDto(
+                        product.getId(),
+                        product.getName(),
+                        product.getPosition(),
+                        product.getDescription(),
+                        product.getPrice(),
+                        product.getImg()
+                ))
                 .collect(Collectors.toList());
     }
 }
