@@ -2,6 +2,7 @@ package com.example.jejuairbnb.services;
 
 import com.example.jejuairbnb.controller.ProductControllerDto.FindProductOneResponseDto;
 import com.example.jejuairbnb.domain.Product;
+import com.example.jejuairbnb.repository.ICommentRepository;
 import com.example.jejuairbnb.repository.IProductRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,11 +25,17 @@ public class ProductServiceTest {
     @MockBean
     private IProductRepository productRepository;
 
+    @MockBean
+    private ICommentRepository commentRepository;
+
     private ProductService productService;
 
     @BeforeEach
     public void setup() {
-        productService = new ProductService(productRepository);
+        productService = new ProductService(
+                productRepository,
+                commentRepository
+        );
     }
 
     @Test

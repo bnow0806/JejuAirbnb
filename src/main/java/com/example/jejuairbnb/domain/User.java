@@ -3,12 +3,15 @@ package com.example.jejuairbnb.domain;
 import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.domain.TimeStamped;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "users")
 public class User extends TimeStamped {
@@ -28,19 +31,6 @@ public class User extends TimeStamped {
 
     @Column(name = "kakao_auth_id")
     private String kakaoAuthId;
-
-    @Builder
-    public User(
-            String username,
-            String email,
-            ProviderEnum provider,
-            String kakaoAuthId
-    ) {
-        this.username = username;
-        this.email = email;
-        this.provider = provider;
-        this.kakaoAuthId = kakaoAuthId;
-    }
 }
 
 

@@ -2,8 +2,10 @@ package com.example.jejuairbnb.services;
 
 import com.example.jejuairbnb.controller.ProductControllerDto.FindProductOneResponseDto;
 import com.example.jejuairbnb.controller.ProductControllerDto.FindProductResponseDto;
+import com.example.jejuairbnb.domain.Comment;
 import com.example.jejuairbnb.domain.Product;
 import com.example.jejuairbnb.domain.User;
+import com.example.jejuairbnb.repository.ICommentRepository;
 import com.example.jejuairbnb.repository.IProductRepository;
 import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.exception.HttpException;
@@ -19,6 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductService {
     private final IProductRepository productRepository;
+    private final ICommentRepository commentRepository;
 
     public FindProductOneResponseDto findProductOneById(
             Long id
@@ -29,12 +32,21 @@ public class ProductService {
                         "존재하지 않는 상품입니다.",
                         HttpStatus.NOT_FOUND
                 ));
+        Long commentCount = commentRepository.countByProductId(id);
+        Double commentAvg = commentRepository.avgByProductId(id);
+
+        findProduct.setCommentAvg(commentAvg);
+        findProduct.setCommentCount(commentCount);
+
+        List<Comment> comments = commentRepository.findByProductId(id);
+
 		return FindProductOneResponseDto
                 .builder()
                 .name(findProduct.getName())
                 .description(findProduct.getDescription())
                 .price(findProduct.getPrice())
                 .img(findProduct.getImg())
+                .comments(comments)
                 .build();
     }
 
@@ -43,6 +55,11 @@ public class ProductService {
     ) {
         try {
             Page<Product> productPage = productRepository.findAll(pageable);
+            // productPage 에 나온 product 들의 comment 수를 구한다.
+            for (Product product : productPage.getContent()) {
+                product.setCommentCount(commentRepository.countByProductId(product.getId()));
+                product.setCommentAvg(commentRepository.avgByProductId(product.getId()));
+            }
 
             return FindProductResponseDto
                     .builder()
