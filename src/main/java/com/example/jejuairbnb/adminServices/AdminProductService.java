@@ -31,14 +31,24 @@ public class AdminProductService {
             );
         }
 
-        Product createProductRequestDto = Product
+        if (requestDto.getDescription().length() > 1000) {
+			throw new HttpException(
+                    false,
+                    "description 길이가 너무 깁니다.",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
+        Product newProduct = Product
                 .builder()
                 .name(requestDto.getName())
+                .description(requestDto.getDescription())
                 .price(requestDto.getPrice())
                 .img(requestDto.getImg())
+                .userId(user.getId())
                 .build();
 
-        productRepository.save(createProductRequestDto);
+        productRepository.save(newProduct);
         return new CoreSuccessResponse(
                 true,
                 "상품이 등록되었습니다.",
@@ -71,6 +81,7 @@ public class AdminProductService {
         findProduct.setName(updateProductRequestDto.getName());
         findProduct.setPrice(updateProductRequestDto.getPrice());
         findProduct.setImg(updateProductRequestDto.getImg());
+        findProduct.setUserId(user.getId());
         productRepository.save(findProduct);
 
         return new CoreSuccessResponse(

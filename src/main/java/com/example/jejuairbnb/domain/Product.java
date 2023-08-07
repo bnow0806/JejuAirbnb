@@ -1,5 +1,6 @@
 package com.example.jejuairbnb.domain;
 
+import com.example.jejuairbnb.shared.Enum.PositionEnum;
 import com.example.jejuairbnb.shared.domain.TimeStamped;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,11 +8,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Entity
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "products")
 public class Product extends TimeStamped {
     @Id
@@ -21,12 +25,25 @@ public class Product extends TimeStamped {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "position")
+    private String position;
+
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "price")
-    private Long price;
+    private int price;
 
     @Column(name = "img")
     private String img;
 
+    private Long commentCount;
+
+    private Double commentAvg;
+
     @Column(name = "user_id")
     private Long userId;
+
+    @OneToMany(mappedBy = "product", fetch=FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<Comment> comment = new ArrayList<>();
 }

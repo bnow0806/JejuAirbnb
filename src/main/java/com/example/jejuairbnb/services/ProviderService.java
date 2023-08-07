@@ -4,10 +4,11 @@ import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto
 import com.example.jejuairbnb.controller.ProviderControllerDto.CreateProviderDto.CreateProviderResponseDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.FindProviderDto.FindProviderResponseDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderRequestDto;
-import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginProviderResponseDto;
+import com.example.jejuairbnb.controller.ProviderControllerDto.LoginProviderDto.LoginResponseDto;
 import com.example.jejuairbnb.controller.ProviderControllerDto.UpdateProviderDto.UpdateProviderRequestDto;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.IUserRepository;
+import com.example.jejuairbnb.shared.Enum.ProviderEnum;
 import com.example.jejuairbnb.shared.exception.HttpException;
 import com.example.jejuairbnb.shared.services.SecurityService;
 import jakarta.servlet.http.Cookie;
@@ -16,11 +17,14 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.webjars.NotFoundException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
+import java.util.Map;
+import java.util.Optional;
+
+import static com.example.jejuairbnb.services.SocialLoginService.DOES_NOT_FOUND_KAKAO_TOKEN;
 
 @Service
 @AllArgsConstructor
@@ -32,37 +36,47 @@ public class ProviderService {
     static final String NOT_FOUND_PROVIDER = "존재하지 않는 제공자입니다.";
 
     private final IUserRepository userRepository;
+    private final SocialLoginService socialLoginService;
     private final SecurityService securityService;
 
     @Transactional
     public CreateProviderResponseDto registerProvider(
             CreateProviderRequestDto requestDto
-    ) throws NoSuchAlgorithmException {
+    ) {
+        String kakaoToken = requestDto.getKakaoToken();
+        Map<String, Object> responseKakaoData = socialLoginService.kakaoCallback(kakaoToken);
 
-        System.out.println("회원가입 요청: " + requestDto);
-        userRepository
-                .findByEmail(requestDto.getEmail())
-                .orElseThrow(
-                        () -> new IllegalArgumentException(DUPLICATE_EMAIL)
-                );
-
-        String password = requestDto.getPassword();
-
-        if (!password.equals(requestDto.getRePassword())) {
-            throw new IllegalArgumentException(INVALID_PASSWORD);
+        if (responseKakaoData == null) {
+            throw new NotFoundException(DOES_NOT_FOUND_KAKAO_TOKEN);
         }
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+        String kakaoAuthId = responseKakaoData.get("id").toString();
 
-        String hasingPassword = Base64.getEncoder().encodeToString(hash);
+        User findUserByKakaoAuthId = userRepository.findByKakaoAuthId(kakaoAuthId)
+                .orElse(null);
+        if (findUserByKakaoAuthId != null) {
+            throw new HttpException(
+                    false,
+                    "이미 가입된 유저입니다.",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
 
-        User findUser = User.builder()
-                .username(requestDto.getProvidername())
-                .email(requestDto.getEmail())
+        Optional<Map<String, Object>> kakaoAccountOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("kakao_account"));
+        String email = kakaoAccountOptional.map(kakaoAccount -> kakaoAccount.get("email").toString()).orElse(null);
+
+        Optional<Map<String, Object>> propertiesOptional = Optional.ofNullable((Map<String, Object>) responseKakaoData.get("properties"));
+        String nickname = propertiesOptional.map(properties -> properties.get("nickname").toString()).orElse(null);
+
+        User newUser = User
+                .builder()
+                .username(nickname)
+                .email(email)
+                .kakaoAuthId(kakaoAuthId)
+                .provider(ProviderEnum.TRUE)
                 .build();
 
-        User savedProvider = userRepository.save(findUser);
+        User savedProvider = userRepository.save(newUser);
 
         return CreateProviderResponseDto.builder()
                 .providername(savedProvider.getUsername())
@@ -107,15 +121,12 @@ public class ProviderService {
     }
 
     @Transactional
-    public LoginProviderResponseDto loginProvider(
+    public LoginResponseDto loginProvider(
             LoginProviderRequestDto requestDto,
             HttpServletResponse response
     ){
         try {
             //SHA-256 으로 PW 검증
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(requestDto.getPassword().getBytes(StandardCharsets.UTF_8));
-
             User findUser = userRepository.findByEmail(requestDto.getEmail())
                     .orElseThrow(() -> new HttpException(
                             false,
@@ -125,7 +136,7 @@ public class ProviderService {
 
             String getToken = securityService.createToken(findUser.getEmail());
 
-            LoginProviderResponseDto responseDto = new LoginProviderResponseDto();
+            LoginResponseDto responseDto = new LoginResponseDto();
             responseDto.setEmail(findUser.getEmail());
             responseDto.setToken(getToken);
 
@@ -138,7 +149,11 @@ public class ProviderService {
             return responseDto;
 
         } catch (Exception e) {
-            throw new RuntimeException("bad request");
+            throw new HttpException(
+                    false,
+                    "bad request",
+                    HttpStatus.BAD_REQUEST
+            );
         }
     }
 }

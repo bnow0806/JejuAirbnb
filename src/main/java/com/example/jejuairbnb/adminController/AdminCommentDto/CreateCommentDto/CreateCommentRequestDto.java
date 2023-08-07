@@ -1,16 +1,14 @@
-package com.example.jejuairbnb.adminController.AdminProductDto.CreateProductDto;
+package com.example.jejuairbnb.adminController.AdminCommentDto.CreateCommentDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class CreateProductRequestDto {
-    @Schema(name = "name")
-    private String name;
+public class CreateCommentRequestDto {
+    @Schema(name = "rating")
+    private Float rating;
     @Schema(name = "description")
     private String description;
-    @Schema(name = "price")
-    private int price;
     @Schema(name = "img")
     private String img;
     @Schema(name = "userId")

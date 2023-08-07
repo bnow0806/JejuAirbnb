@@ -6,6 +6,6 @@ import lombok.Data;
 public class UpdateProductRequestDto {
     private Long id;
     private String name;
-    private Long price;
+    private int price;
     private String img;
 }

@@ -6,6 +6,7 @@ import com.example.jejuairbnb.shared.exception.HttpException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
@@ -27,26 +30,26 @@ public class SecurityService {
 
     private final IUserRepository userRepository;
 
-    public String createToken(String subject) {
+    public String createToken(String email) {
 
         if (EXPIRATION_TIME <= 0) {
             throw new RuntimeException("Expiratio time must be greater than zero!");
         }
 
-        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
-        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(SECRET_KEY);
-        Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
+        SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 
         return Jwts.builder()
-                .setSubject(subject)
+                .setSubject(email)
                 .setExpiration(new Date(System.currentTimeMillis()+EXPIRATION_TIME))
-                .signWith(signingKey,signatureAlgorithm)
+                .signWith(key)
                 .compact();
     }
 
     public User getSubject(String token) {
+        SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+
         Claims claims = Jwts.parserBuilder()
-                .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
+                .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -62,12 +65,14 @@ public class SecurityService {
     }
 
     public String getTokenByCookie(Cookie[] cookies) {
-        String token = null;
         for (Cookie cookie : cookies) {
             if (cookie.getName().equals("access-token")) {
-                token = cookie.getValue();
+                return cookie.getValue();
             }
         }
-        return token;
-    }
-}
+        throw new HttpException(
+                false,
+                "쿠키에서 토큰을 찾을 수 없습니다.",
+                HttpStatus.NOT_FOUND
+        );
+    }}
