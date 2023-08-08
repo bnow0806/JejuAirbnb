@@ -5,15 +5,15 @@ import lombok.Data;
 
 @Data
 public class LoginProviderRequestDto {
-    private String password;
+    private String username;
     private String email;
 
     @Builder
     public LoginProviderRequestDto(
-            String password,
+            String username,
             String email
     ) {
-        this.password = password;
+        this.username = username;
         this.email = email;
     }
 }

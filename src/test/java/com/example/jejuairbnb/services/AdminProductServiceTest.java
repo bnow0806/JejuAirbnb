@@ -31,9 +31,9 @@ public class AdminProductServiceTest {
 
         CreateProductRequestDto requestDto = new CreateProductRequestDto();
         requestDto.setName("Test Product");
-        requestDto.setPrice(100L);
+        requestDto.setPrice(100);
         requestDto.setImg("Test Image URL");
-        requestDto.setUserId(1);
+        requestDto.setUserId(1L);
 
         // 실행
         CoreSuccessResponse response = adminProductService.createProduct(user, requestDto);
