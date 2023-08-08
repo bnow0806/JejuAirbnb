@@ -18,4 +18,3 @@ public class CoreSuccessResponse {
     @Schema(description = "success response statuscode", example = "201")
     private int statusCode;
 }
-

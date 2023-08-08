@@ -1,6 +1,5 @@
 package com.example.jejuairbnb.domain;
 
-import com.example.jejuairbnb.shared.Enum.PositionEnum;
 import com.example.jejuairbnb.shared.domain.TimeStamped;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -50,4 +49,11 @@ public class Product extends TimeStamped {
             cascade = CascadeType.REMOVE
     )
     private List<Comment> comment = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "product",
+            fetch=FetchType.LAZY,
+            cascade = CascadeType.REMOVE
+    )
+    private List<Reservation> reservations = new ArrayList<>();
 }
