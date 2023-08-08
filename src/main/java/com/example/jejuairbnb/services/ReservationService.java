@@ -18,6 +18,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -36,12 +38,32 @@ public class ReservationService {
         String checkOut = createReservationRequestDto.getCheckOut();
         Long productId = createReservationRequestDto.getProductId();
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate checkInDate = LocalDate.parse(checkIn, formatter);
+        LocalDate checkOutDate = LocalDate.parse(checkOut, formatter);
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new HttpException(
                         false,
                         "해당 상품이 존재하지 않습니다.",
                         HttpStatus.NOT_FOUND
                 ));
+
+        List<Reservation> reservationList = product.getReservations();
+        for (Reservation reservation: reservationList) {
+            LocalDate existingCheckIn = LocalDate.parse(reservation.getCheckIn(), formatter);
+            LocalDate existingCheckOut = LocalDate.parse(reservation.getCheckOut(), formatter);
+
+            if ((checkOutDate.isEqual(existingCheckIn) || checkInDate.isAfter(existingCheckIn)) && checkInDate.isBefore(existingCheckOut)
+                    || (checkOutDate.isAfter(existingCheckIn) && checkOutDate.isBefore(existingCheckOut) || checkOutDate.isEqual(existingCheckOut))
+                    || (checkInDate.isBefore(existingCheckIn) && checkOutDate.isAfter(existingCheckOut))) {
+                throw new HttpException(
+                        false,
+                        "이미 예약된 날짜입니다.",
+                        HttpStatus.BAD_REQUEST
+                );
+            }
+        }
 
         Reservation newReservation = Reservation
                 .builder()
@@ -61,10 +83,6 @@ public class ReservationService {
                 ));
         int price = findProduct.getPrice();
         int totalPrice;
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate checkInDate = LocalDate.parse(checkIn,formatter);
-        LocalDate checkOutDate = LocalDate.parse(checkOut,formatter);
 
         long daysBetween = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
         totalPrice = (int)daysBetween * price;
