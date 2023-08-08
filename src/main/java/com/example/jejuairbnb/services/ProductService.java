@@ -5,6 +5,7 @@ import com.example.jejuairbnb.controller.ProductControllerDto.FindProductRespons
 import com.example.jejuairbnb.controller.ProductControllerDto.ProductDto;
 import com.example.jejuairbnb.domain.Comment;
 import com.example.jejuairbnb.domain.Product;
+import com.example.jejuairbnb.domain.Reservation;
 import com.example.jejuairbnb.domain.User;
 import com.example.jejuairbnb.repository.ICommentRepository;
 import com.example.jejuairbnb.repository.IProductRepository;
@@ -17,7 +18,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -96,8 +103,16 @@ public class ProductService {
 
         Page<Product> productPage = productRepository.findByUserId(user.getId(), pageable);
         List<Product> products = productPage.getContent();
+        // products 를 불러와서 각각의 product 의 reservation 을 불러온다.
+        for (Product product : products) {
+            List<Reservation> reservedDates = product.getReservations();
+            product.setReservations(reservedDates);
+        }
+
+        List<ProductDto> productDtos = productDtos(products);
+
         return new FindProductResponseDto(
-                productDtos(products),
+                productDtos,
                 products.size(),
                 productPage.getTotalPages()
         );
@@ -119,18 +134,44 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public List<ProductDto> productDtos(
-            List<Product> products
-    ) {
+    public List<ProductDto> productDtos(List<Product> products) {
         return products.stream()
-                .map(product -> new ProductDto(
-                        product.getId(),
-                        product.getName(),
-                        product.getPosition(),
-                        product.getDescription(),
-                        product.getPrice(),
-                        product.getImg()
-                ))
+                .map(this::convertToProductDto)
                 .collect(Collectors.toList());
+    }
+
+//    Product 객체를 입력받아 ProductDto 객체로 변환
+    private ProductDto convertToProductDto(Product product) {
+        List<Map<String, String>> reservedDates = getReservedDatesForProduct(product);
+
+        return new ProductDto(
+                product.getId(),
+                product.getName(),
+                product.getPosition(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getImg(),
+                reservedDates
+        );
+    }
+
+    // Product 객체의 모든 예약에 대한 시작일과 종료일을 가져온다.
+    private List<Map<String, String>> getReservedDatesForProduct(Product product) {
+        return product.getReservations().stream()
+                .map(reservation -> getReservedDates(reservation.getCheckIn(), reservation.getCheckOut()))
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, String> getReservedDates(String checkIn, String checkOut) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate start = LocalDate.parse(checkIn, formatter);
+        LocalDate end = LocalDate.parse(checkOut, formatter);
+
+        // LinkedHashMap 를 사용해서 순서를 보장한다.
+        Map<String, String> reservedDates = new LinkedHashMap<>();
+        reservedDates.put("start_date", start.toString());
+        reservedDates.put("end_date", end.toString());
+
+        return reservedDates;
     }
 }
